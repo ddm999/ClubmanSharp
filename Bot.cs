@@ -420,7 +420,7 @@ namespace ClubmanSharp
                     DisconnectController();
                     connected = false;
                     error = true;
-                    errorMsg = $"Unexpected error sending inputs to ViGEm.\nException details below:\n\n{ex.Message}";
+                    errorMsg = $"Unexpected error sending driver inputs to ViGEm.\nException details below:\n\n{ex.Message}";
                     return;
                 }
             }
@@ -575,94 +575,112 @@ namespace ClubmanSharp
                     continue;
                 }
 
-                // if we're past the laps in the race, the race must have ended
-                completedRaces += 1;
-                File.AppendAllTextAsync("completedRaces.txt", $"{DateTime.Now}\n");
-                currentMenuState = MenuState.RaceResult;
-                Thread.Sleep(8000);
-
-                // reset all driver controls
-                _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 128);
-                _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
-                _ds4.SetButtonState(DualShock4Button.TriggerLeft, false);
-                _ds4.SetButtonState(DualShock4Button.TriggerRight, false);
-                _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 0);
-                _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
-
-                // RaceResult: 1st (X), Table (X),
-                for (int i = 0; i < 2; i++)
+                try
                 {
+                    // if we're past the laps in the race, the race must have ended
+                    completedRaces += 1;
+                    File.AppendAllTextAsync("completedRaces.txt", $"{DateTime.Now}\n");
+                    currentMenuState = MenuState.RaceResult;
+                    Thread.Sleep(8000);
+
+                    // reset all driver controls
+                    _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 128);
+                    _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
+                    _ds4.SetButtonState(DualShock4Button.TriggerLeft, false);
+                    _ds4.SetButtonState(DualShock4Button.TriggerRight, false);
+                    _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 0);
+                    _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
+
+                    // RaceResult: 1st (X), Table (X),
+                    for (int i = 0; i < 2; i++)
+                    {
+                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(1000);
+                    }
+                    // Load (Short),
+                    Thread.Sleep(3000);
+                    // Fanfare (X),
                     _ds4.SetButtonState(DualShock4Button.Cross, true);
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
                     _ds4.SetButtonState(DualShock4Button.Cross, false);
                     _ds4.SubmitReport();
-                    Thread.Sleep(1000);
-                }
-                // Load (Short),
-                Thread.Sleep(3000);
-                // Fanfare (X),
-                _ds4.SetButtonState(DualShock4Button.Cross, true);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetButtonState(DualShock4Button.Cross, false);
-                _ds4.SubmitReport();
-                // Load (Short),
-                Thread.Sleep(3000);
-                // Rewards (X X X), Daily Ticket (sometimes X)
-                for (int i = 0; i < 4; i++)
-                {
+                    // Load (Short),
+                    Thread.Sleep(3000);
+                    // Rewards (X X X), Daily Ticket (sometimes X)
+                    for (int i = 0; i < 4; i++)
+                    {
+                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(1000);
+                    }
+                    Thread.Sleep(8000);
+
+                    currentMenuState = MenuState.Replay;
+                    // Replay: (O, X)
+                    _ds4.SetButtonState(DualShock4Button.Circle, true);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(50);
+                    _ds4.SetButtonState(DualShock4Button.Circle, false);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(500);
                     _ds4.SetButtonState(DualShock4Button.Cross, true);
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
                     _ds4.SetButtonState(DualShock4Button.Cross, false);
                     _ds4.SubmitReport();
-                    Thread.Sleep(1000);
+                    Thread.Sleep(LoadTime);
+
+                    currentMenuState = MenuState.PostRace;
+                    // PostRace: (dpad right, X)
+                    _ds4.SetDPadDirection(DualShock4DPadDirection.East);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(50);
+                    _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(500);
+                    _ds4.SetButtonState(DualShock4Button.Cross, true);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(50);
+                    _ds4.SetButtonState(DualShock4Button.Cross, false);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(LoadTime);
+
+                    currentMenuState = MenuState.PreRace;
+                    // PreRace: X
+                    _ds4.SetButtonState(DualShock4Button.Cross, true);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(50);
+                    _ds4.SetButtonState(DualShock4Button.Cross, false);
+                    _ds4.SubmitReport();
+
+                    // race countdown isn't OnTrack, so wait for at least it
+                    currentMenuState = MenuState.RaceStart;
+                    Thread.Sleep(7000);
+                    currentMenuState = MenuState.Race;
                 }
-                Thread.Sleep(8000);
-
-                currentMenuState = MenuState.Replay;
-                // Replay: (O, X)
-                _ds4.SetButtonState(DualShock4Button.Circle, true);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetButtonState(DualShock4Button.Circle, false);
-                _ds4.SubmitReport();
-                Thread.Sleep(500);
-                _ds4.SetButtonState(DualShock4Button.Cross, true);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetButtonState(DualShock4Button.Cross, false);
-                _ds4.SubmitReport();
-                Thread.Sleep(LoadTime);
-
-                currentMenuState = MenuState.PostRace;
-                // PostRace: (dpad right, X)
-                _ds4.SetDPadDirection(DualShock4DPadDirection.East);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetDPadDirection(DualShock4DPadDirection.None);
-                _ds4.SubmitReport();
-                Thread.Sleep(500);
-                _ds4.SetButtonState(DualShock4Button.Cross, true);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetButtonState(DualShock4Button.Cross, false);
-                _ds4.SubmitReport();
-                Thread.Sleep(LoadTime);
-
-                currentMenuState = MenuState.PreRace;
-                // PreRace: X
-                _ds4.SetButtonState(DualShock4Button.Cross, true);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetButtonState(DualShock4Button.Cross, false);
-                _ds4.SubmitReport();
-
-                // race countdown isn't OnTrack, so wait for at least it
-                currentMenuState = MenuState.RaceStart;
-                Thread.Sleep(7000);
-                currentMenuState = MenuState.Race;
+                catch (Exception ex)
+                {
+                    if (_ds4 is null)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        DisconnectController();
+                        connected = false;
+                        error = true;
+                        errorMsg = $"Unexpected error sending menu inputs to ViGEm.\nException details below:\n\n{ex.Message}";
+                        return;
+                    }
+                }
             }
         }
 
