@@ -37,6 +37,8 @@ namespace ClubmanSharp
 
         public int completedRaces = 0;
 
+        public TimeSpan fastestLap = new TimeSpan(0, 59, 59);
+
         public MenuState currentMenuState = MenuState.Unknown;
 
         public bool writeLocationData = false;
@@ -230,6 +232,9 @@ namespace ClubmanSharp
                 dataPacket.CarCode = sr.ReadInt32();
 
                 currentPacket = dataPacket;
+
+                if (currentPacket.LastLapTime.Milliseconds != -1 && fastestLap > currentPacket.LastLapTime)
+                    fastestLap = currentPacket.LastLapTime;
             }
         }
 
@@ -251,6 +256,9 @@ namespace ClubmanSharp
                 errorMsg = "Internal object for Driver not initialized.\nFor developers: call 'Start()' first!";
                 return;
             }
+
+            // block for 5 seconds so it doesn't interfere with restarting a race
+            Thread.Sleep(5000);
 
             bool ok = true;
             while (ok)
