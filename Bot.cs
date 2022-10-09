@@ -262,7 +262,8 @@ namespace ClubmanSharp
                 }
 
                 if (currentPacket is null ||
-                    !currentPacket.Flags.HasFlag(SimulatorFlags.OnTrack))
+                    !currentPacket.Flags.HasFlag(SimulatorFlags.OnTrack) ||
+                    currentPacket.CurrentLap > 5)
                 {
                     Thread.Sleep(1000);
                     continue;
@@ -494,8 +495,10 @@ namespace ClubmanSharp
                 // then press down
                 _ds4.SetDPadDirection(DualShock4DPadDirection.South);
                 _ds4.SubmitReport();
-                Thread.Sleep(100);
+                Thread.Sleep(50);
                 _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                _ds4.SubmitReport();
+                Thread.Sleep(50);
                 // and finally, click start race
                 _ds4.SetButtonState(DualShock4Button.Cross, true);
                 _ds4.SubmitReport();
@@ -531,8 +534,10 @@ namespace ClubmanSharp
                 // then go right once
                 _ds4.SetDPadDirection(DualShock4DPadDirection.East);
                 _ds4.SubmitReport();
-                Thread.Sleep(100);
+                Thread.Sleep(50);
                 _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                _ds4.SubmitReport();
+                Thread.Sleep(50);
                 // and click to restart race
                 _ds4.SetButtonState(DualShock4Button.Cross, true);
                 _ds4.SubmitReport();
@@ -565,6 +570,7 @@ namespace ClubmanSharp
                 // if we're past the laps in the race, the race must have ended
                 completedRaces += 1;
                 currentMenuState = MenuState.RaceResult;
+                Thread.Sleep(LoadTime);
 
                 // reset all driver controls
                 _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 128);
@@ -574,25 +580,38 @@ namespace ClubmanSharp
                 _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 0);
                 _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
 
-                Thread.Sleep(LoadTime);
-                // RaceResult: 1st (X), Table (X), Load (Short), Fanfare (X), Rewards (X X X)
-                // just smash X a bunch until we're at the replay where that doesn't do anything
-                for (int i = 0; i < 20; i++)
+                // RaceResult: 1st (X), Table (X),
+                for (int i = 0; i < 2; i++)
                 {
                     _ds4.SetButtonState(DualShock4Button.Cross, true);
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
                     _ds4.SetButtonState(DualShock4Button.Cross, false);
                     _ds4.SubmitReport();
-                    Thread.Sleep(200);
+                    Thread.Sleep(1000);
                 }
+                // Load (Short),
+                Thread.Sleep(3000);
+                // Fanfare (X), Rewards (X X X)
+                for (int i = 0; i < 4; i++)
+                {
+                    _ds4.SetButtonState(DualShock4Button.Cross, true);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(50);
+                    _ds4.SetButtonState(DualShock4Button.Cross, false);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(1000);
+                }
+                Thread.Sleep(LoadTime);
 
                 currentMenuState = MenuState.Replay;
                 // Replay: (O, X)
                 _ds4.SetButtonState(DualShock4Button.Circle, true);
                 _ds4.SubmitReport();
-                Thread.Sleep(250);
+                Thread.Sleep(50);
                 _ds4.SetButtonState(DualShock4Button.Circle, false);
+                _ds4.SubmitReport();
+                Thread.Sleep(200);
                 _ds4.SetButtonState(DualShock4Button.Cross, true);
                 _ds4.SubmitReport();
                 Thread.Sleep(50);
@@ -604,8 +623,10 @@ namespace ClubmanSharp
                 // PostRace: (dpad right, X)
                 _ds4.SetDPadDirection(DualShock4DPadDirection.East);
                 _ds4.SubmitReport();
-                Thread.Sleep(100);
+                Thread.Sleep(50);
                 _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                _ds4.SubmitReport();
+                Thread.Sleep(200);
                 _ds4.SetButtonState(DualShock4Button.Cross, true);
                 _ds4.SubmitReport();
                 Thread.Sleep(50);
