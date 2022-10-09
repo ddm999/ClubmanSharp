@@ -480,7 +480,7 @@ namespace ClubmanSharp
                     Thread.Sleep(50);
                     _ds4.SetButtonState(DualShock4Button.Circle, false);
                     _ds4.SubmitReport();
-                    Thread.Sleep(50);
+                    Thread.Sleep(200);
                 }
                 // then smash the hell out of left dpad
                 for (int i = 0; i < 5; i++)
@@ -490,7 +490,7 @@ namespace ClubmanSharp
                     Thread.Sleep(50);
                     _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                     _ds4.SubmitReport();
-                    Thread.Sleep(50);
+                    Thread.Sleep(200);
                 }
                 // then press down
                 _ds4.SetDPadDirection(DualShock4DPadDirection.South);
@@ -498,14 +498,14 @@ namespace ClubmanSharp
                 Thread.Sleep(50);
                 _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                 _ds4.SubmitReport();
-                Thread.Sleep(50);
+                Thread.Sleep(200);
                 // and finally, click start race
                 _ds4.SetButtonState(DualShock4Button.Cross, true);
                 _ds4.SubmitReport();
                 Thread.Sleep(50);
                 _ds4.SetButtonState(DualShock4Button.Cross, false);
                 _ds4.SubmitReport();
-                Thread.Sleep(50);
+                Thread.Sleep(200);
             }
             else if (currentMenuState == MenuState.Race)
             {
@@ -514,7 +514,7 @@ namespace ClubmanSharp
                 Thread.Sleep(50);
                 _ds4.SetButtonState(DualShock4Button.Options, false);
                 _ds4.SubmitReport();
-                Thread.Sleep(100);
+                Thread.Sleep(200);
 
                 currentMenuState = MenuState.RacePaused;
             }
@@ -529,7 +529,7 @@ namespace ClubmanSharp
                     Thread.Sleep(50);
                     _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                     _ds4.SubmitReport();
-                    Thread.Sleep(50);
+                    Thread.Sleep(200);
                 }
                 // then go right once
                 _ds4.SetDPadDirection(DualShock4DPadDirection.East);
@@ -537,18 +537,18 @@ namespace ClubmanSharp
                 Thread.Sleep(50);
                 _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                 _ds4.SubmitReport();
-                Thread.Sleep(50);
+                Thread.Sleep(200);
                 // and click to restart race
                 _ds4.SetButtonState(DualShock4Button.Cross, true);
                 _ds4.SubmitReport();
                 Thread.Sleep(50);
                 _ds4.SetButtonState(DualShock4Button.Cross, false);
                 _ds4.SubmitReport();
-                Thread.Sleep(50);
+                Thread.Sleep(200);
             }
 
             currentMenuState = MenuState.RaceStart;
-            Thread.Sleep(7000+LoadTime);
+            Thread.Sleep(13000);
             currentMenuState = MenuState.Race;
 
             bool ok = true;
@@ -571,7 +571,7 @@ namespace ClubmanSharp
                 completedRaces += 1;
                 File.AppendAllTextAsync("completedRaces.txt", $"{DateTime.Now}\n");
                 currentMenuState = MenuState.RaceResult;
-                Thread.Sleep(LoadTime + 3000);
+                Thread.Sleep(8000);
 
                 // reset all driver controls
                 _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 128);
@@ -593,7 +593,15 @@ namespace ClubmanSharp
                 }
                 // Load (Short),
                 Thread.Sleep(3000);
-                // Fanfare (X), Rewards (X X X)
+                // Fanfare (X),
+                _ds4.SetButtonState(DualShock4Button.Cross, true);
+                _ds4.SubmitReport();
+                Thread.Sleep(50);
+                _ds4.SetButtonState(DualShock4Button.Cross, false);
+                _ds4.SubmitReport();
+                // Load (Short),
+                Thread.Sleep(3000);
+                // Rewards (X X X), Daily Ticket (sometimes X)
                 for (int i = 0; i < 4; i++)
                 {
                     _ds4.SetButtonState(DualShock4Button.Cross, true);
@@ -603,7 +611,7 @@ namespace ClubmanSharp
                     _ds4.SubmitReport();
                     Thread.Sleep(1000);
                 }
-                Thread.Sleep(LoadTime);
+                Thread.Sleep(8000);
 
                 currentMenuState = MenuState.Replay;
                 // Replay: (O, X)
@@ -612,7 +620,7 @@ namespace ClubmanSharp
                 Thread.Sleep(50);
                 _ds4.SetButtonState(DualShock4Button.Circle, false);
                 _ds4.SubmitReport();
-                Thread.Sleep(200);
+                Thread.Sleep(500);
                 _ds4.SetButtonState(DualShock4Button.Cross, true);
                 _ds4.SubmitReport();
                 Thread.Sleep(50);
@@ -627,7 +635,7 @@ namespace ClubmanSharp
                 Thread.Sleep(50);
                 _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                 _ds4.SubmitReport();
-                Thread.Sleep(200);
+                Thread.Sleep(500);
                 _ds4.SetButtonState(DualShock4Button.Cross, true);
                 _ds4.SubmitReport();
                 Thread.Sleep(50);
