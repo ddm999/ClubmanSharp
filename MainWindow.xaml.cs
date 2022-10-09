@@ -85,7 +85,7 @@ namespace ClubmanSharp
 
             TxtLap.Text = $"Fastest Lap: {bot.fastestLap.Minutes:d1}:{bot.fastestLap.Seconds:d2}.{bot.fastestLap.Milliseconds:d3}";
             TxtRaces.Text = $"Completed Races: {bot.completedRaces}";
-            TxtCredits.Text = $"Estimated Credits: {bot.completedRaces * 110000 * 0.98:n0}";
+            TxtCredits.Text = $"Estimated Credits: {bot.completedRaces * 105000 * 0.98:n0}";
         }
 
         private void StartStop_Click(object sender, RoutedEventArgs e)
