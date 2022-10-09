@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
@@ -569,6 +569,7 @@ namespace ClubmanSharp
 
                 // if we're past the laps in the race, the race must have ended
                 completedRaces += 1;
+                File.AppendAllTextAsync("completedRaces.txt", $"{DateTime.Now}\n");
                 currentMenuState = MenuState.RaceResult;
                 Thread.Sleep(LoadTime + 3000);
 
