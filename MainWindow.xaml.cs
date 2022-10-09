@@ -36,6 +36,11 @@ namespace ClubmanSharp
 
             CompositionTarget.Rendering += VisualLoop;
 
+            TxtDetails.Text = "Developed with car tunes provided by Photon-Phoenix\n\n" +
+                              "Using the GT7 SimInterface found & documented by Nenkai\n\n" +
+                              "Based on Clubman+ by igoticecream\n\n" +
+                              "Special thanks to the PSNProfiles GT7 and GT Modding Community discord servers\n\n";
+
             TxtHelp.Text = "This script recommends use of the R33 GT-R '97 with a specific tune for 1:20 avg laps.\n" +
                            "It may work with other vehicles and tunes but performance cannot be guaranteed.\n" +
                            "You must set Pedal Controls to R2/L2, Steering to Left Stick, and Nitrous to R3 button.\n" +
@@ -45,6 +50,10 @@ namespace ClubmanSharp
                            "Turn on a password requirement for PlayStation purchases before using any script.\n" +
                            "You must start Remote Play with no controller connected to your PC. It cannot be minimised, but you can move other programs above it.\n" +
                            "Enter your PS4/PS5's local IP address and hit Start while on the Tokyo Clubman+ pre-race menu.";
+
+            TxtShortHelp.Text = "Turn on a password requirement for PlayStation purchases before using any script.\n\n" +
+                                "You must start Remote Play with no controller connected to your PC. It cannot be minimised, but you can move other programs above it.\n\n" +
+                                "Enter your PS4/PS5's local IP address and hit Start while on the Tokyo Clubman+ pre-race menu.";
         }
 
         public void VisualLoop(object? sender, EventArgs? e)
