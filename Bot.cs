@@ -553,6 +553,8 @@ namespace ClubmanSharp
                     }
                     else if (currentMenuState == MenuState.Replay)
                     {
+                        registeredResult = false;
+
                         Thread.Sleep(LongDelay);
 
                         _ds4.SetButtonState(DualShock4Button.Circle, true);
