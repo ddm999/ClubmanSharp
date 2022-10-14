@@ -1,6 +1,6 @@
-﻿using SimulatorInterface;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,7 +23,7 @@ namespace ClubmanSharp
     {
         private bool isStarted = false;
         private string ip = "192.168.1.30";
-        private Bot bot;
+        private readonly Bot bot;
         private DateTime nextUpdate = DateTime.UtcNow;
 
         public MainWindow()
@@ -36,12 +36,12 @@ namespace ClubmanSharp
 
             CompositionTarget.Rendering += VisualLoop;
 
-            TxtDetails.Text = "Developed with car tunes provided by Photon-Phoenix\n\n" +
+            TxtDetails.Text = "Developed with tunes and tips provided by Photon-Phoenix\n\n" +
                               "Using the GT7 SimInterface found & documented by Nenkai\n\n" +
                               "Based on Clubman+ by igoticecream\n\n" +
                               "Special thanks to the PSNProfiles GT7 and GT Modding Community discord servers\n\n";
 
-            TxtHelp.Text = "This script recommends use of the R33 GT-R '97 with a specific tune for 1:20 avg laps.\n" +
+            TxtHelp.Text = "Specific tunes that this script is designed to work with can be found at the link at the bottom of the screen.\n" +
                            "It may work with other vehicles and tunes but performance cannot be guaranteed.\n" +
                            "You must set Pedal Controls to R2/L2, Steering to Left Stick, and Nitrous to R3 button.\n" +
                            "Automatic gearing assist is required. Turning off other assists (but keep ABS default) may improve performance. Sensitivity 10 may also help.\n\n" +
@@ -130,6 +130,12 @@ namespace ClubmanSharp
                 TxtIP.IsEnabled = true;
                 BtnStartStop.IsEnabled = true;
             }
+        }
+
+        private void Hyperlink_Click(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
+            e.Handled = true;
         }
     }
 }

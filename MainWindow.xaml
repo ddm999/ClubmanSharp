@@ -10,16 +10,19 @@
         <TabControl Background="#222">
             <TabItem Header="Startup">
                 <Grid Background="#222">
-                    <TextBlock Name="TxtHeader" Text="ClubmanSharp by ddm" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="24" Margin="10,10,0,0"/>
+                    <TextBlock Name="TxtHeader" Text="ClubmanSharp by ddm [beta v0.5]" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="24" Margin="10,10,0,0"/>
                     <TextBlock Name="TxtDetails" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="220" Width="460" FontSize="16" Margin="10,60,0,0"/>
-                    <TextBlock Name="TxtLink" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="16" Margin="10,300,0,0">
-                        <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp">Source available at github.com/ddm999/ClubmanSharp</Hyperlink>
+                    <TextBlock Name="TxtMainLink" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="16" Margin="10,300,0,0">
+                        <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp" RequestNavigate="Hyperlink_Click">Source available at github.com/ddm999/ClubmanSharp</Hyperlink>
                     </TextBlock>
                 </Grid>
             </TabItem>
             <TabItem Header="Details">
                 <Grid Background="#222">
-                    <TextBlock Name="TxtHelp" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="330" Width="460" FontSize="12" Margin="10,10,0,0"/>
+                    <TextBlock Name="TxtHelp" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="280" Width="460" FontSize="12" Margin="10,10,0,0"/>
+                    <TextBlock Name="TxtTuneLink" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="16" Margin="10,280,0,0">
+                        <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp/wiki" RequestNavigate="Hyperlink_Click">Open recommended tunes list</Hyperlink>
+                    </TextBlock>
                 </Grid>
             </TabItem>
             <TabItem Header="Race">
@@ -33,6 +36,25 @@
                     <TextBlock Name="TxtRaces" Text="Completed Races: 0" HorizontalAlignment="Right" Margin="0,0,250,55" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
                 </Grid>
             </TabItem>
+            <!--
+            <TabItem Header="Settings">
+                <Grid Background="#222">
+                    <!-
+                    <TextBlock Name="TxtCar" Text="Used Tune:" Foreground="#DDD" FontSize="16" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <RadioButton Name="RadioCarAuto" IsChecked="True" IsEnabled="False" Content="Auto" Foreground="#DDD" FontSize="16" Margin="110,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                    <RadioButton Name="RadioCarR33" IsChecked="False" IsEnabled="False" Content="R33" Foreground="#DDD" FontSize="16" Margin="175,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                    <RadioButton Name="RadioCarR34" IsChecked="False" IsEnabled="False" Content="R34" Foreground="#DDD" FontSize="16" Margin="235,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                    <RadioButton Name="RadioCarGTO" IsChecked="False" IsEnabled="False" Content="GTO" Foreground="#DDD" FontSize="16" Margin="295,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                    ->
+                    <TextBlock Name="TxtDelay" Text="Menu Delay Settings:" Foreground="#DDD" FontSize="16" Margin="10,40,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                    <RadioButton Name="RadioDelayPS4" IsChecked="True" Content="PS4" Foreground="#DDD" FontSize="16" Margin="180,42,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                    <RadioButton Name="RadioDelayPS5" IsChecked="False" Content="PS5" Foreground="#DDD" FontSize="16" Margin="240,42,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                    <!-
+                    <RadioButton Name="RadioDelayCustom" IsChecked="False" IsEnabled="False" Content="Custom" Foreground="#DDD" FontSize="16" Margin="300,42,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                    ->
+                </Grid>
+            </TabItem>
+            -->
         </TabControl>
     </Grid>
 </Window>

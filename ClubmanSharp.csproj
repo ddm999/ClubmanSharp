@@ -13,19 +13,19 @@
 
   <ItemGroup>
     <Reference Include="PDTools.Crypto">
-      <HintPath>..\PDTools\SimulatorInterface\bin\Debug\net6.0\PDTools.Crypto.dll</HintPath>
+      <HintPath>..\PDTools\PDTools.SimulatorInterface\bin\Release\net6.0\PDTools.Crypto.dll</HintPath>
     </Reference>
-    <Reference Include="SimulatorInterface">
-      <HintPath>..\PDTools\SimulatorInterface\bin\Debug\net6.0\SimulatorInterface.dll</HintPath>
+    <Reference Include="PDTools.SimulatorInterface">
+      <HintPath>..\PDTools\PDTools.SimulatorInterface\bin\Release\net6.0\PDTools.SimulatorInterface.dll</HintPath>
     </Reference>
     <Reference Include="Syroot.BinaryData">
-      <HintPath>..\PDTools\SimulatorInterface\bin\Debug\net6.0\Syroot.BinaryData.dll</HintPath>
+      <HintPath>..\PDTools\PDTools.SimulatorInterface\bin\Release\net6.0\Syroot.BinaryData.dll</HintPath>
     </Reference>
     <Reference Include="Syroot.BinaryData.Core">
-      <HintPath>..\PDTools\SimulatorInterface\bin\Debug\net6.0\Syroot.BinaryData.Core.dll</HintPath>
+      <HintPath>..\PDTools\PDTools.SimulatorInterface\bin\Release\net6.0\Syroot.BinaryData.Core.dll</HintPath>
     </Reference>
     <Reference Include="Syroot.BinaryData.Memory">
-      <HintPath>..\PDTools\SimulatorInterface\bin\Debug\net6.0\Syroot.BinaryData.Memory.dll</HintPath>
+      <HintPath>..\PDTools\PDTools.SimulatorInterface\bin\Release\net6.0\Syroot.BinaryData.Memory.dll</HintPath>
     </Reference>
   </ItemGroup>
 
