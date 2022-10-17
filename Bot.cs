@@ -102,7 +102,7 @@ namespace ClubmanSharp
                     continue;
                 }
 
-                if (currentPacket.LastLapTime.Milliseconds != -1 && fastestLap > currentPacket.BestLapTime)
+                if (currentPacket.BestLapTime.Milliseconds != -1 && fastestLap > currentPacket.BestLapTime)
                     fastestLap = currentPacket.BestLapTime;
             }
         }
