@@ -62,6 +62,11 @@
                     </Grid>
                 </Grid>
             </TabItem>
+            <TabItem Header="Licensing">
+                <Grid Background="#222">
+                    <TextBlock Name="TxtLicensing" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="280" Width="460" FontSize="12" Margin="10,10,0,0"/>
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>
