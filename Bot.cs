@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Net;
-using System.Net.Sockets;
-using PDTools.Crypto.SimulationInterface;
 using PDTools.SimulatorInterface;
-using Syroot.BinaryData.Memory;
-using System.Numerics;
 using Nefarius.ViGEm.Client;
 using Nefarius.ViGEm.Client.Targets;
 using Nefarius.ViGEm.Client.Targets.DualShock4;
 using System.Diagnostics;
 using System.Threading;
-using System.IO;
 
 namespace ClubmanSharp
 {
@@ -27,8 +21,8 @@ namespace ClubmanSharp
         public const int ReceivePort = 33739;
         public const int BindPort = 33740;
 
-        public const int ShortDelay = 500;
-        public const int LongDelay = 3000;
+        public int ShortDelay = 250;
+        public int LongDelay = 3000;
 
         public bool connected = false;
         public bool error = false;
@@ -86,6 +80,9 @@ namespace ClubmanSharp
 
             if (_simInterfaceCTS != null)
                 _simInterfaceCTS.Cancel();
+
+            if (_simInterface != null && _simInterface.Started)
+                _simInterface.Dispose();
         }
 
         private void SimInterface_OnReceive(SimulatorPacket packet)
@@ -100,19 +97,19 @@ namespace ClubmanSharp
             while (ok)
             {
                 Thread.Sleep(1000);
-                if (!connected || currentPacket == null)
+                if (!connected || currentPacket is null)
                 {
                     continue;
                 }
 
-                if (currentPacket.LastLapTime.Milliseconds != -1 && fastestLap > currentPacket.LastLapTime)
-                    fastestLap = currentPacket.LastLapTime;
+                if (currentPacket.LastLapTime.Milliseconds != -1 && fastestLap > currentPacket.BestLapTime)
+                    fastestLap = currentPacket.BestLapTime;
             }
         }
 
         private async void SimInterfaceClientRunner()
         {
-            if (_simInterface == null)
+            if (_simInterface is null)
             {
                 connected = false;
                 error = true;
@@ -120,10 +117,7 @@ namespace ClubmanSharp
                 return;
             }
 
-            if (_simInterfaceCTS == null)
-                _simInterfaceCTS = new CancellationTokenSource();
-            else
-                _simInterfaceCTS.TryReset();
+            _simInterfaceCTS = new CancellationTokenSource();
 
             var task = _simInterface.Start(_simInterfaceCTS.Token);
 
@@ -137,10 +131,6 @@ namespace ClubmanSharp
             {
                 error = true;
                 errorMsg = $"Error during Simulator Interface client update.\nException details below:\n\n{ex.Message}";
-            }
-            finally
-            {
-                _simInterface.Dispose();
             }
         }
 
@@ -184,9 +174,6 @@ namespace ClubmanSharp
 
                 try
                 {
-                    // always use all the NOS
-                    _ds4.SetButtonState(DualShock4Button.ThumbRight, true);
-
                     // handle accel & brake for target speed
                     var mph = currentPacket.MetersPerSecond * 2.23694;
                     var rotn = (1 - currentPacket.RelativeOrientationToNorth) * 180;
@@ -197,15 +184,22 @@ namespace ClubmanSharp
 
                     targetMph += 2; // needed bc of how the acceleration decrease scales
 
+                    // default all buttons off
+                    // NOS
+                    _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
+                    // brake
+                    _ds4.SetButtonState(DualShock4Button.TriggerLeft, false);
+                    _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 0);
+                    // accel
+                    _ds4.SetButtonState(DualShock4Button.TriggerRight, false);
+                    _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
+
                     // FULL BRAKE
                     if (mph > targetMph * 1.2)
                     {
                         // brake
                         _ds4.SetButtonState(DualShock4Button.TriggerLeft, true);
                         _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 255);
-                        // accel
-                        _ds4.SetButtonState(DualShock4Button.TriggerRight, false);
-                        _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
                     }
                     // PARTIAL BRAKE
                     else if (mph > targetMph)
@@ -215,16 +209,10 @@ namespace ClubmanSharp
                         var input = Convert.ToByte(255 - (255 / (targetMph * 0.2) * diff));
                         _ds4.SetButtonState(DualShock4Button.TriggerLeft, true);
                         _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, input);
-                        // accel
-                        _ds4.SetButtonState(DualShock4Button.TriggerRight, false);
-                        _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
                     }
                     // PARTIAL ACCEL
                     else if (mph > targetMph * 0.9)
                     {
-                        // brake
-                        _ds4.SetButtonState(DualShock4Button.TriggerLeft, false);
-                        _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 0);
                         // accel
                         var diff = targetMph - mph;
                         var input = Convert.ToByte(255 / (targetMph * 0.1) * diff);
@@ -234,9 +222,8 @@ namespace ClubmanSharp
                     // FULL ACCEL
                     else
                     {
-                        // brake
-                        _ds4.SetButtonState(DualShock4Button.TriggerLeft, false);
-                        _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 0);
+                        // use NOS
+                        _ds4.SetButtonState(DualShock4Button.ThumbRight, true);
                         // accel
                         _ds4.SetButtonState(DualShock4Button.TriggerRight, true);
                         _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 255);
@@ -255,6 +242,8 @@ namespace ClubmanSharp
                         if (-rotn < targetOrientation - 5.0)
                         {
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 255);
+                            // override NOS to not be used
+                            _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
                         }
                         // PARTIAL RIGHT
                         else if (-rotn < targetOrientation)
@@ -267,6 +256,8 @@ namespace ClubmanSharp
                         else if (-rotn > targetOrientation + 5.0)
                         {
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 0);
+                            // override NOS to not be used
+                            _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
                         }
                         // PARTIAL LEFT
                         else if (-rotn > targetOrientation)
@@ -288,6 +279,8 @@ namespace ClubmanSharp
                         if (rotn < targetOrientation - 5.0)
                         {
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 255);
+                            // override NOS to not be used
+                            _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
                         }
                         // PARTIAL RIGHT
                         else if (rotn < targetOrientation)
@@ -300,6 +293,8 @@ namespace ClubmanSharp
                         else if (rotn > targetOrientation + 5.0)
                         {
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 0);
+                            // override NOS to not be used
+                            _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
                         }
                         // PARTIAL LEFT
                         else if (rotn > targetOrientation)
@@ -319,6 +314,11 @@ namespace ClubmanSharp
                 }
                 catch (Exception ex)
                 {
+                    if (_ds4 is null)
+                    {
+                        return;
+                    }
+
                     DisconnectController();
                     connected = false;
                     error = true;
@@ -344,7 +344,7 @@ namespace ClubmanSharp
 
         public MenuState FindBaseMenuState()
         {
-            if (currentPacket == null)
+            if (currentPacket is null)
                 return MenuState.Unknown;
             if (currentPacket.Flags.HasFlag(SimulatorFlags.Paused))
                 return MenuState.RacePaused;
@@ -358,7 +358,7 @@ namespace ClubmanSharp
         public MenuState FindNewMenuState()
         {
             // no packet recieved or no race is loaded
-            if (currentPacket == null || currentPacket.LapCount == -1)
+            if (currentPacket is null || currentPacket.LapCount == -1)
                 return MenuState.Unknown;
 
             if (currentMenuState == MenuState.PreRace)
@@ -417,85 +417,103 @@ namespace ClubmanSharp
                 return;
             }
 
-            if (currentMenuState == MenuState.PreRace)
+            try
             {
-                // ensure we're hovered over start race
-
-                // first, smash the hell out of the circle button
-                for (int i = 0; i < 5; i++)
+                if (currentMenuState == MenuState.PreRace)
                 {
-                    _ds4.SetButtonState(DualShock4Button.Circle, true);
-                    _ds4.SubmitReport();
-                    Thread.Sleep(50);
-                    _ds4.SetButtonState(DualShock4Button.Circle, false);
-                    _ds4.SubmitReport();
-                    Thread.Sleep(200);
-                }
-                // then smash the hell out of left dpad
-                for (int i = 0; i < 5; i++)
-                {
-                    _ds4.SetDPadDirection(DualShock4DPadDirection.West);
-                    _ds4.SubmitReport();
-                    Thread.Sleep(50);
-                    _ds4.SetDPadDirection(DualShock4DPadDirection.None);
-                    _ds4.SubmitReport();
-                    Thread.Sleep(200);
-                }
-                // then press down
-                _ds4.SetDPadDirection(DualShock4DPadDirection.South);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetDPadDirection(DualShock4DPadDirection.None);
-                _ds4.SubmitReport();
-                Thread.Sleep(200);
-                // and finally, click start race
-                _ds4.SetButtonState(DualShock4Button.Cross, true);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetButtonState(DualShock4Button.Cross, false);
-                _ds4.SubmitReport();
-                Thread.Sleep(200);
-            }
-            else if (currentMenuState == MenuState.Race)
-            {
-                _ds4.SetButtonState(DualShock4Button.Options, true);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetButtonState(DualShock4Button.Options, false);
-                _ds4.SubmitReport();
-                Thread.Sleep(200);
+                    // ensure we're hovered over start race
 
-                currentMenuState = MenuState.RacePaused;
-            }
-
-            if (currentMenuState == MenuState.RacePaused)
-            {
-                // smash the hell out of left dpad
-                for (int i = 0; i < 5; i++)
-                {
-                    _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                    // first, smash the hell out of the circle button
+                    for (int i = 0; i < 5; i++)
+                    {
+                        _ds4.SetButtonState(DualShock4Button.Circle, true);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetButtonState(DualShock4Button.Circle, false);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(ShortDelay);
+                    }
+                    // then smash the hell out of left dpad
+                    for (int i = 0; i < 5; i++)
+                    {
+                        _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(ShortDelay);
+                    }
+                    // then press down
+                    _ds4.SetDPadDirection(DualShock4DPadDirection.South);
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
                     _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                     _ds4.SubmitReport();
-                    Thread.Sleep(200);
+                    Thread.Sleep(ShortDelay);
+                    // and finally, click start race
+                    _ds4.SetButtonState(DualShock4Button.Cross, true);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(50);
+                    _ds4.SetButtonState(DualShock4Button.Cross, false);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(ShortDelay);
                 }
-                // then go right once
-                _ds4.SetDPadDirection(DualShock4DPadDirection.East);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetDPadDirection(DualShock4DPadDirection.None);
-                _ds4.SubmitReport();
-                Thread.Sleep(200);
-                // and click to restart race
-                _ds4.SetButtonState(DualShock4Button.Cross, true);
-                _ds4.SubmitReport();
-                Thread.Sleep(50);
-                _ds4.SetButtonState(DualShock4Button.Cross, false);
-                _ds4.SubmitReport();
-                Thread.Sleep(200);
+                else if (currentMenuState == MenuState.Race)
+                {
+                    _ds4.SetButtonState(DualShock4Button.Options, true);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(50);
+                    _ds4.SetButtonState(DualShock4Button.Options, false);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(ShortDelay);
 
-                Thread.Sleep(5000);
+                    currentMenuState = MenuState.RacePaused;
+                }
+
+                if (currentMenuState == MenuState.RacePaused)
+                {
+                    // smash the hell out of left dpad
+                    for (int i = 0; i < 5; i++)
+                    {
+                        _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(ShortDelay);
+                    }
+                    // then go right once
+                    _ds4.SetDPadDirection(DualShock4DPadDirection.East);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(50);
+                    _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(ShortDelay);
+                    // and click to restart race
+                    _ds4.SetButtonState(DualShock4Button.Cross, true);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(50);
+                    _ds4.SetButtonState(DualShock4Button.Cross, false);
+                    _ds4.SubmitReport();
+                    Thread.Sleep(ShortDelay);
+
+                    Thread.Sleep(LongDelay);
+                }
+            }
+            catch (Exception ex)
+            {
+                if (_ds4 is null)
+                {
+                    return;
+                }
+                else
+                {
+                    DisconnectController();
+                    connected = false;
+                    error = true;
+                    errorMsg = $"Unexpected error sending initial menu inputs to ViGEm.\nException details below:\n\n{ex.Message}";
+                    return;
+                }
             }
 
             bool ok = true;

@@ -1,18 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ClubmanSharp
 {
@@ -24,15 +15,33 @@ namespace ClubmanSharp
         private bool isStarted = false;
         private string ip = "192.168.1.30";
         private readonly Bot bot;
+        private readonly Settings settings = Settings.Default;
         private DateTime nextUpdate = DateTime.UtcNow;
 
         public MainWindow()
         {
             InitializeComponent();
 
+            ip = settings.ip;
             TxtIP.Text = ip;
 
             bot = new Bot();
+
+            CustomDelayShort.Text = $"{settings.customShortDelay}";
+            CustomDelayLong.Text = $"{settings.customLongDelay}";
+
+            switch (settings.delaySetting)
+            {
+                case 0:
+                    RadioDelayPS4.IsChecked = true;
+                    break;
+                case 1:
+                    RadioDelayPS5.IsChecked = true;
+                    break;
+                case 2:
+                    RadioDelayCustom.IsChecked = true;
+                    break;
+            }
 
             CompositionTarget.Rendering += VisualLoop;
 
@@ -111,6 +120,7 @@ namespace ClubmanSharp
                 bot.Start(ip);
                 if (bot.error is true)
                 {
+                    bot.Stop();
                     MessageBox.Show(bot.errorMsg, "Error on starting bot", MessageBoxButton.OK, MessageBoxImage.Error);
                     bot.error = false;
                     BtnStartStop.Content = "Start";
@@ -120,12 +130,12 @@ namespace ClubmanSharp
                 }
                 BtnStartStop.Content = "Stop";
                 BtnStartStop.IsEnabled = true;
+                settings.ip = ip;
+                settings.Save();
             }
             else
             {
-                BtnStartStop.Content = "Stopping...";
                 bot.Stop();
-
                 BtnStartStop.Content = "Start";
                 TxtIP.IsEnabled = true;
                 BtnStartStop.IsEnabled = true;
@@ -136,6 +146,84 @@ namespace ClubmanSharp
         {
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
             e.Handled = true;
+        }
+
+        private void RadioDelayPS4_Checked(object sender, RoutedEventArgs e)
+        {
+            if (bot is null)
+                return;
+            CustomDelayShort.Text = "250";
+            CustomDelayLong.Text = "3000";
+            bot.ShortDelay = 250;
+            bot.LongDelay = 3000;
+            CustomDelayShort.IsEnabled = false;
+            CustomDelayLong.IsEnabled = false;
+            RadioDelayPS5.IsChecked = false;
+            RadioDelayCustom.IsChecked = false;
+            settings.delaySetting = 0;
+            settings.Save();
+        }
+
+        private void RadioDelayPS5_Checked(object sender, RoutedEventArgs e)
+        {
+            CustomDelayShort.Text = "250";
+            CustomDelayLong.Text = "2000";
+            bot.ShortDelay = 250;
+            bot.LongDelay = 2000;
+            CustomDelayShort.IsEnabled = false;
+            CustomDelayLong.IsEnabled = false;
+            RadioDelayPS4.IsChecked = false;
+            RadioDelayCustom.IsChecked = false;
+            settings.delaySetting = 1;
+            settings.Save();
+        }
+
+        private void RadioDelayCustom_Checked(object sender, RoutedEventArgs e)
+        {
+            bot.ShortDelay = int.Parse(CustomDelayShort.Text);
+            bot.LongDelay = int.Parse(CustomDelayLong.Text);
+            CustomDelayShort.IsEnabled = true;
+            CustomDelayLong.IsEnabled = true;
+            RadioDelayPS4.IsChecked = false;
+            RadioDelayPS5.IsChecked = false;
+            settings.delaySetting = 2;
+            settings.Save();
+        }
+
+        private void CustomDelayShort_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (bot is null)
+                return;
+            bool success = int.TryParse(CustomDelayShort.Text, out int number);
+            if (success)
+            {
+                bot.ShortDelay = number;
+                settings.customShortDelay = number;
+                settings.Save();
+            }
+            else
+            {
+                MessageBox.Show($"Invalid delay of {CustomDelayShort.Text}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CustomDelayShort.Text = $"{bot.ShortDelay}";
+            }
+        }
+
+        private void CustomDelayLong_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (bot is null)
+                return;
+            bool success = int.TryParse(CustomDelayLong.Text, out int number);
+            if (success)
+            {
+                bot.LongDelay = number;
+                settings.customLongDelay = number;
+                settings.Save();
+            }
+            else
+            {
+                MessageBox.Show($"Invalid delay of {CustomDelayLong.Text}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                CustomDelayLong.Text = $"{bot.LongDelay}";
+            }
         }
     }
 }
