@@ -20,10 +20,8 @@
 			<TabItem Header="Map">
 				<Grid Background="#222">
 					<Viewbox>
-						<Canvas Name="MapCanvas" Width="2000" Height="2000" Background="LightGray">
-						</Canvas>
+						<Canvas Name="MapCanvas" Width="2000" Height="2000" Background="LightGray" />
 					</Viewbox>
-				
 				</Grid>
 			</TabItem>
             <TabItem Header="Details">
