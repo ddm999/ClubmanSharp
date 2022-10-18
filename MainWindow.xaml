@@ -17,6 +17,15 @@
                     </TextBlock>
                 </Grid>
             </TabItem>
+			<TabItem Header="Map">
+				<Grid Background="#222">
+					<Viewbox>
+						<Canvas Name="MapCanvas" Width="2000" Height="2000" Background="LightGray">
+						</Canvas>
+					</Viewbox>
+				
+				</Grid>
+			</TabItem>
             <TabItem Header="Details">
                 <Grid Background="#222">
                     <TextBlock Name="TxtHelp" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="280" Width="460" FontSize="12" Margin="10,10,0,0"/>

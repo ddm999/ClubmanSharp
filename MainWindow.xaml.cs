@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
+using System.Windows.Shapes;
 
 namespace ClubmanSharp
 {
@@ -73,7 +74,7 @@ namespace ClubmanSharp
         }
 
         public void VisualLoop(object? sender, EventArgs? e)
-        {
+        {   
             if (bot.error is true)
             {
                 MessageBox.Show(bot.errorMsg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -111,6 +112,24 @@ namespace ClubmanSharp
             TxtLap.Text = $"Fastest Lap: {bot.fastestLap.Minutes:d1}:{bot.fastestLap.Seconds:d2}.{bot.fastestLap.Milliseconds:d3}";
             TxtRaces.Text = $"Completed Races: {bot.completedRaces}";
             TxtCredits.Text = $"Estimated Credits: {bot.completedRaces * 105000 * 0.98:n0}";
+            
+            int transformX = 1000;
+            int transformY = 800;
+
+            foreach (Segment segment in TrackData.segments)
+            { 
+                Rectangle rectangle = new Rectangle();
+
+                rectangle.Stroke = SystemColors.WindowFrameBrush;
+                
+                rectangle.Width = segment.maxX - segment.minX;
+                rectangle.Height = segment.maxZ - segment.minZ;
+
+                MapCanvas.Children.Add(rectangle);
+                Canvas.SetLeft(rectangle, segment.minX + transformX); 
+                Canvas.SetTop(rectangle, segment.minZ + transformY); 
+        
+            }
         }
 
         private void StartStop_Click(object sender, RoutedEventArgs e)

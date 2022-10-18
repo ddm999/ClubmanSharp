@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ClubmanSharp
 {
-    struct Segment
+    public struct Segment
     {
         public int minX;
         public int minZ;
@@ -29,7 +29,7 @@ namespace ClubmanSharp
 
     public class TrackData
     {
-        static readonly Segment[] segments =
+        public static readonly Segment[] segments =
         {
           new Segment( 160,  775,  195,  875,  -70.0, 300.0),
           new Segment(  66,  775,  160,  875,  -46.0, 300.0),
