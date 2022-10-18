@@ -74,7 +74,7 @@ namespace ClubmanSharp
         }
 
         public void VisualLoop(object? sender, EventArgs? e)
-        {   
+        {
             if (bot.error is true)
             {
                 MessageBox.Show(bot.errorMsg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -128,7 +128,6 @@ namespace ClubmanSharp
                 MapCanvas.Children.Add(rectangle);
                 Canvas.SetLeft(rectangle, segment.minX + transformX); 
                 Canvas.SetTop(rectangle, segment.minZ + transformY); 
-        
             }
         }
 
