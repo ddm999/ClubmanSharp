@@ -157,8 +157,6 @@ namespace ClubmanSharp
                 MapCanvas.Children.Add(avatar);
                 Canvas.SetLeft(avatar, bot.currentPacket.Position.X + transformX); 
                 Canvas.SetTop(avatar, bot.currentPacket.Position.Z + transformY); 
-
-                Debug.WriteLine(bot.currentPacket.Position.X);
              } 
         }
 
