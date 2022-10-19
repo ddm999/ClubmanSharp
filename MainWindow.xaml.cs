@@ -97,6 +97,12 @@ namespace ClubmanSharp
                 TxtState.Text += "Replay";
             else if (bot.currentMenuState == Bot.MenuState.PostRace)
                 TxtState.Text += "Post Race";
+            else if (bot.currentMenuState == Bot.MenuState.Stuck_PreOrPostRace)
+                TxtState.Text += "Stk Unknown";
+            else if (bot.currentMenuState == Bot.MenuState.Stuck_PostRace)
+                TxtState.Text += "Stk Post Race";
+            else if (bot.currentMenuState == Bot.MenuState.Stuck_PreRace)
+                TxtState.Text += "Stk Pre Race";
 
             TxtLap.Text = $"Fastest Lap: {bot.fastestLap.Minutes:d1}:{bot.fastestLap.Seconds:d2}.{bot.fastestLap.Milliseconds:d3}";
             TxtRaces.Text = $"Completed Races: {bot.completedRaces}";
