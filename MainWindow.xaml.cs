@@ -1,5 +1,7 @@
-﻿using System;
+﻿using PDTools.SimulatorInterface;
+using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -113,14 +115,26 @@ namespace ClubmanSharp
             TxtRaces.Text = $"Completed Races: {bot.completedRaces}";
             TxtCredits.Text = $"Estimated Credits: {bot.completedRaces * 105000 * 0.98:n0}";
             
+             if (bot.currentMenuState == Bot.MenuState.Race)
+             {
+                MapCanvasViewbox.Visibility = Visibility.Visible;
+                TxtShortHelp.Visibility = Visibility.Collapsed;
+             } 
+             else
+             {
+                MapCanvasViewbox.Visibility = Visibility.Collapsed;
+                TxtShortHelp.Visibility = Visibility.Visible;
+             }
+
+            MapCanvas.Children.Clear();
+
             int transformX = 1000;
             int transformY = 800;
 
             foreach (Segment segment in TrackData.segments)
             { 
                 Rectangle rectangle = new Rectangle();
-
-                rectangle.Stroke = SystemColors.WindowFrameBrush;
+                rectangle.Stroke = new SolidColorBrush(Colors.Black);
                 
                 rectangle.Width = segment.maxX - segment.minX;
                 rectangle.Height = segment.maxZ - segment.minZ;
@@ -129,6 +143,23 @@ namespace ClubmanSharp
                 Canvas.SetLeft(rectangle, segment.minX + transformX); 
                 Canvas.SetTop(rectangle, segment.minZ + transformY); 
             }
+
+             if (bot.currentPacket is SimulatorPacket)
+             {
+
+                Ellipse avatar = new Ellipse();
+                avatar.Fill = new SolidColorBrush(Colors.Red);
+                avatar.Width = 24;
+                avatar.Height = 24;
+                avatar.HorizontalAlignment = HorizontalAlignment.Center;
+                avatar.VerticalAlignment = VerticalAlignment.Center;
+
+                MapCanvas.Children.Add(avatar);
+                Canvas.SetLeft(avatar, bot.currentPacket.Position.X + transformX); 
+                Canvas.SetTop(avatar, bot.currentPacket.Position.Z + transformY); 
+
+                Debug.WriteLine(bot.currentPacket.Position.X);
+             } 
         }
 
         private void StartStop_Click(object sender, RoutedEventArgs e)
