@@ -127,8 +127,6 @@ namespace ClubmanSharp
                 }
                 BtnStartStop.Content = "Stop";
                 BtnStartStop.IsEnabled = true;
-                settings.ip = ip;
-                settings.Save();
             }
             else
             {
@@ -164,9 +162,9 @@ namespace ClubmanSharp
         private void RadioDelayPS5_Checked(object sender, RoutedEventArgs e)
         {
             CustomDelayShort.Text = "250";
-            CustomDelayLong.Text = "2000";
+            CustomDelayLong.Text = "750";
             bot.ShortDelay = 250;
-            bot.LongDelay = 2000;
+            bot.LongDelay = 750;
             CustomDelayShort.IsEnabled = false;
             CustomDelayLong.IsEnabled = false;
             RadioDelayPS4.IsChecked = false;
@@ -184,6 +182,12 @@ namespace ClubmanSharp
             RadioDelayPS4.IsChecked = false;
             RadioDelayPS5.IsChecked = false;
             settings.delaySetting = 2;
+            settings.Save();
+        }
+
+        private void TxtIP_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            settings.ip = ip;
             settings.Save();
         }
 
