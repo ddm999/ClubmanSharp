@@ -114,17 +114,6 @@ namespace ClubmanSharp
             TxtLap.Text = $"Fastest Lap: {bot.fastestLap.Minutes:d1}:{bot.fastestLap.Seconds:d2}.{bot.fastestLap.Milliseconds:d3}";
             TxtRaces.Text = $"Completed Races: {bot.completedRaces}";
             TxtCredits.Text = $"Estimated Credits: {bot.completedRaces * 105000 * 0.98:n0}";
-            
-             if (bot.currentMenuState == Bot.MenuState.Race)
-             {
-                MapCanvasViewbox.Visibility = Visibility.Visible;
-                TxtShortHelp.Visibility = Visibility.Collapsed;
-             } 
-             else
-             {
-                MapCanvasViewbox.Visibility = Visibility.Collapsed;
-                TxtShortHelp.Visibility = Visibility.Visible;
-             }
 
             MapCanvas.Children.Clear();
 
