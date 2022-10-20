@@ -14,12 +14,12 @@ namespace ClubmanSharp
         private IDualShock4Controller? _ds4 = null;
         private SimulatorInterfaceClient? _simInterface = null;
         private CancellationTokenSource? _simInterfaceCTS = null;
+        private int _preRaceStuckCount = 0;
 
         public SimulatorPacket? currentPacket = null;
 
-        public const int SendDelaySeconds = 10;
-        public const int ReceivePort = 33739;
-        public const int BindPort = 33740;
+        public const int TimeOut = 10;
+        public TimeSpan TimeOutSpan = new(0, 0, TimeOut);
 
         public int ShortDelay = 250;
         public int LongDelay = 3000;
@@ -92,7 +92,6 @@ namespace ClubmanSharp
 
         private void PacketUpdateLoop()
         {
-
             var ok = true;
             while (ok)
             {
@@ -104,6 +103,15 @@ namespace ClubmanSharp
 
                 if (currentPacket.BestLapTime.Milliseconds != -1 && fastestLap > currentPacket.BestLapTime)
                     fastestLap = currentPacket.BestLapTime;
+
+                if (DateTimeOffset.Now - currentPacket.DateReceived > TimeOutSpan)
+                {
+                    DisconnectController();
+                    connected = false;
+                    error = true;
+                    errorMsg = $"Connection timed out:\nno data packet recieved for {TimeOut} seconds.";
+                    return;
+                }
             }
         }
 
@@ -338,11 +346,14 @@ namespace ClubmanSharp
             RaceResult,
             Replay,
             PostRace,
+            Stuck_PreOrPostRace,
+            Stuck_PostRace,
+            Stuck_PreRace,
 
             Unknown = -1,
         }
 
-        public MenuState FindBaseMenuState()
+        public MenuState FindBaseMenuState(bool allowReplay=false)
         {
             if (currentPacket is null)
                 return MenuState.Unknown;
@@ -352,7 +363,19 @@ namespace ClubmanSharp
                 return MenuState.Race;
             if (currentPacket.NumCarsAtPreRace > 1)
                 return MenuState.PreRace;
+            if (allowReplay && currentPacket.LapsInRace > 0)
+                return MenuState.Replay;
             return MenuState.Unknown;
+        }
+
+        public void PreRaceStuckDetection()
+        {
+            _preRaceStuckCount += 1;
+            if (_preRaceStuckCount >= 5)
+            {
+                currentMenuState = MenuState.Stuck_PreOrPostRace;
+                _preRaceStuckCount = 0;
+            }
         }
 
         public MenuState FindNewMenuState()
@@ -365,6 +388,7 @@ namespace ClubmanSharp
             {
                 if (currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
                     return MenuState.Race;
+                PreRaceStuckDetection();
             }
             else if (currentMenuState == MenuState.Race)
             {
@@ -605,6 +629,7 @@ namespace ClubmanSharp
                         _ds4.SetButtonState(DualShock4Button.Cross, false);
                         _ds4.SubmitReport();
 
+                        _preRaceStuckCount = 0;
                         currentMenuState = MenuState.PreRace;
                     }
                     else if (currentMenuState == MenuState.PreRace)
@@ -618,6 +643,103 @@ namespace ClubmanSharp
                         _ds4.SubmitReport();
 
                         Thread.Sleep(LongDelay);
+                    }
+                    else if (currentMenuState == MenuState.Stuck_PreOrPostRace)
+                    {
+                        Thread.Sleep(LongDelay);
+                        // ensure we're hovered over start race
+
+                        // first, smash the hell out of the circle button
+                        for (int i = 0; i < 5; i++)
+                        {
+                            _ds4.SetButtonState(DualShock4Button.Circle, true);
+                            _ds4.SubmitReport();
+                            Thread.Sleep(50);
+                            _ds4.SetButtonState(DualShock4Button.Circle, false);
+                            _ds4.SubmitReport();
+                            Thread.Sleep(ShortDelay);
+                        }
+                        // then smash the hell out of left dpad
+                        for (int i = 0; i < 5; i++)
+                        {
+                            _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                            _ds4.SubmitReport();
+                            Thread.Sleep(50);
+                            _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                            _ds4.SubmitReport();
+                            Thread.Sleep(ShortDelay);
+                        }
+                        // then press down
+                        _ds4.SetDPadDirection(DualShock4DPadDirection.South);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(ShortDelay);
+                        // and finally, click start race
+                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SubmitReport();
+
+                        Thread.Sleep(1000 + LongDelay);
+
+                        // if we're still in pre-race, it's actually post-race
+                        currentMenuState = FindBaseMenuState(true);
+                        if (currentMenuState == MenuState.PreRace)
+                            currentMenuState = MenuState.Stuck_PostRace;
+                    }
+                    else if (currentMenuState == MenuState.Stuck_PostRace)
+                    {
+                        // first, smash the hell out of the circle button
+                        for (int i = 0; i < 5; i++)
+                        {
+                            _ds4.SetButtonState(DualShock4Button.Circle, true);
+                            _ds4.SubmitReport();
+                            Thread.Sleep(50);
+                            _ds4.SetButtonState(DualShock4Button.Circle, false);
+                            _ds4.SubmitReport();
+                            Thread.Sleep(ShortDelay);
+                        }
+                        // then press left
+                        _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(ShortDelay);
+                        // and finally, click retry
+                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SubmitReport();
+
+                        currentMenuState = MenuState.Stuck_PreRace;
+                    }
+                    else if (currentMenuState == MenuState.Stuck_PreRace)
+                    {
+                        Thread.Sleep(LongDelay);
+
+                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SubmitReport();
+
+                        Thread.Sleep(1000 + LongDelay);
+
+                        currentMenuState = MenuState.PreRace;
+                        currentMenuState = FindNewMenuState();
+                        if (currentMenuState != MenuState.Race)
+                        {
+                            DisconnectController();
+                            connected = false;
+                            error = true;
+                            errorMsg = "Got stuck attempting to correct a post-race menu failure. Unable to determine game state.";
+                            return;
+                        }
                     }
                 }
                 catch (Exception ex)

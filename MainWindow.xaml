@@ -8,20 +8,15 @@
         Title="ClubmanSharp" Height="400" Width="500" MinHeight="400" MinWidth="500" MaxHeight="400" MaxWidth="500">
     <Grid Background="#222">
         <TabControl Background="#222">
-			<TabItem Header="Startup">
-				<Grid Background="#222">
-					<TextBlock Name="TxtHeader" Text="ClubmanSharp by ddm [beta v0.6]" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="24" Margin="10,10,0,0"/>
-					<TextBlock Name="TxtDetails" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="220" Width="460" FontSize="16" Margin="10,60,0,0"/>
-					<TextBlock Name="TxtMainLink" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="16" Margin="10,300,0,0">
-						<Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp" RequestNavigate="Hyperlink_Click">Source available at github.com/ddm999/ClubmanSharp</Hyperlink>
-					</TextBlock>
-				</Grid>
-			</TabItem>
-            <TabItem Header="Details">
+            <TabItem Header="Startup">
                 <Grid Background="#222">
-                    <TextBlock Name="TxtHelp" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="280" Width="460" FontSize="12" Margin="10,10,0,0"/>
-                    <TextBlock Name="TxtTuneLink" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="16" Margin="10,280,0,0">
-                        <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp/wiki" RequestNavigate="Hyperlink_Click">Open recommended tunes list</Hyperlink>
+                    <TextBlock Name="TxtHeader" Text="ClubmanSharp by ddm [beta v0.7]" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="24" Margin="10,10,0,0"/>
+                    <TextBlock Name="TxtWikiLink" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="24" Margin="10,50,0,0">
+                        <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp/wiki" RequestNavigate="Hyperlink_Click">Click to view usage guide and car tunes</Hyperlink>
+                    </TextBlock>
+                    <TextBlock Name="TxtDetails" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="220" Width="460" FontSize="16" Margin="10,100,0,0"/>
+                    <TextBlock Name="TxtSrcLink" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="16" Margin="10,300,0,0">
+                        <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp" RequestNavigate="Hyperlink_Click">Source available at github.com/ddm999/ClubmanSharp</Hyperlink>
                     </TextBlock>
                 </Grid>
             </TabItem>
@@ -29,7 +24,7 @@
                 <Grid Background="#222">
                     <TextBlock Name="TxtShortHelp" Text="" HorizontalAlignment="Right" TextWrapping="Wrap" Foreground="#DDD" Width="460" FontSize="14" Margin="0,27,10,115"/>
                     <Button Name="BtnStartStop" FontFamily="Roboto" Background="#666" Foreground="#DDD" Click="StartStop_Click" FontSize="24" Content="Start" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,10,10" HorizontalAlignment="Right" Width="100" Height="40" VerticalAlignment="Bottom"/>
-                    <TextBox Name="TxtIP" FontFamily="Roboto Mono" Background="#222" Foreground="#DDD" FontSize="24" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,115,10" TextWrapping="NoWrap" Text="255.255.255.255" Width="355" Height="40" VerticalAlignment="Bottom"/>
+                    <TextBox Name="TxtIP" TextChanged="TxtIP_TextChanged" FontFamily="Roboto Mono" Background="#222" Foreground="#DDD" FontSize="24" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,115,10" TextWrapping="NoWrap" Text="255.255.255.255" Width="355" Height="40" VerticalAlignment="Bottom"/>
                     <TextBlock Name="TxtLap" Text="Fastest Lap: x:xx.xx" HorizontalAlignment="Right" Margin="0,0,10,85" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
                     <TextBlock Name="TxtCredits" Text="Estimated Credits: 0" HorizontalAlignment="Right" Margin="0,0,10,55" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
                     <TextBlock Name="TxtState" Text="Current State: Unknown" HorizontalAlignment="Right" Margin="0,0,250,85" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
