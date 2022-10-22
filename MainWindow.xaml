@@ -31,6 +31,13 @@
                     <TextBlock Name="TxtRaces" Text="Completed Races: 0" HorizontalAlignment="Right" Margin="0,0,250,55" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
                 </Grid>
             </TabItem>
+			<TabItem Header="Map">
+				<Grid Background="#222">
+					<Viewbox>
+						<Canvas Name="MapCanvas" Width="2000" Height="2000" Background="LightGray" />
+					</Viewbox>
+				</Grid>
+			</TabItem>
             <TabItem Header="Settings">
                 <Grid Background="#222">
                     <Grid>
