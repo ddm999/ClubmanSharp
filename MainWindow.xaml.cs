@@ -194,6 +194,10 @@ namespace ClubmanSharp
 
         private void TxtIP_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (TxtIP.Text == "x")
+                return;
+
+            ip = TxtIP.Text;
             settings.ip = ip;
             settings.Save();
         }
