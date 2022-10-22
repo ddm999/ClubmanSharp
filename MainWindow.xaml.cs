@@ -50,7 +50,8 @@ namespace ClubmanSharp
                               "Based on Clubman+ by igoticecream\n\n" +
                               "Special thanks to the PSNProfiles GT7 and GT Modding Community discord servers\n\n";
 
-            TxtShortHelp.Text = "Turn on a password requirement for PlayStation purchases before using any script.\n\n" +
+            TxtShortHelp.Text = "Turn on a password requirement for PlayStation purchases before using any script.\n" +
+                                "It is recommended to use HidHide to prevent the bot interacting with your desktop.\n\n" +
                                 "You must start Remote Play with no controller connected to your PC. It cannot be minimised, but you can move other programs above it.\n\n" +
                                 "Enter your PS4/PS5's local IP address and hit Start while on the Tokyo Clubman+ pre-race menu.";
 
