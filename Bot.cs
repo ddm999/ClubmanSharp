@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using PDTools.SimulatorInterface;
 using Nefarius.ViGEm.Client;
@@ -233,8 +233,8 @@ namespace ClubmanSharp
                         // NOS is only used below 150mph
                         if (mph < 150)
                         {
-                        // use NOS
-                        _ds4.SetButtonState(DualShock4Button.ThumbRight, true);
+                            // use NOS
+                            _ds4.SetButtonState(DualShock4Button.ThumbRight, true);
                         }
                         // accel
                         _ds4.SetButtonState(DualShock4Button.TriggerRight, true);
@@ -603,17 +603,15 @@ namespace ClubmanSharp
 
                         Thread.Sleep(LongDelay);
 
-                        _ds4.SetButtonState(DualShock4Button.Circle, true);
-                        _ds4.SubmitReport();
-                        Thread.Sleep(50);
-                        _ds4.SetButtonState(DualShock4Button.Circle, false);
-                        _ds4.SubmitReport();
-                        Thread.Sleep(ShortDelay);
-                        _ds4.SetButtonState(DualShock4Button.Cross, true);
-                        _ds4.SubmitReport();
-                        Thread.Sleep(50);
-                        _ds4.SetButtonState(DualShock4Button.Cross, false);
-                        _ds4.SubmitReport();
+                        for (int i = 0; i < 2; i++)
+                        {
+                            _ds4.SetButtonState(DualShock4Button.Cross, true);
+                            _ds4.SubmitReport();
+                            Thread.Sleep(50);
+                            _ds4.SetButtonState(DualShock4Button.Cross, false);
+                            _ds4.SubmitReport();
+                            Thread.Sleep(ShortDelay);
+                        }
 
                         Thread.Sleep(LongDelay);
                     }
