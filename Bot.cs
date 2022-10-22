@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using PDTools.SimulatorInterface;
 using Nefarius.ViGEm.Client;
@@ -230,8 +230,12 @@ namespace ClubmanSharp
                     // FULL ACCEL
                     else
                     {
+                        // NOS is only used below 150mph
+                        if (mph < 150)
+                        {
                         // use NOS
                         _ds4.SetButtonState(DualShock4Button.ThumbRight, true);
+                        }
                         // accel
                         _ds4.SetButtonState(DualShock4Button.TriggerRight, true);
                         _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 255);
