@@ -23,13 +23,16 @@
         <TabControl Background="#222">
             <TabItem Header="Startup">
                 <Grid Background="#222">
-                    <TextBlock Name="TxtHeader" Text="ClubmanSharp by ddm [beta v0.8]" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="24" Margin="10,10,0,0"/>
+                    <TextBlock Name="TxtHeader" Text="ClubmanSharp by ddm" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="24" Margin="10,10,0,0"/>
                     <TextBlock Name="TxtWikiLink" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="24" Margin="10,50,0,0">
                         <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp/wiki" RequestNavigate="Hyperlink_Click">Click to view usage guide and car tunes</Hyperlink>
                     </TextBlock>
                     <TextBlock Name="TxtDetails" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="220" Width="460" FontSize="16" Margin="10,100,0,0"/>
                     <TextBlock Name="TxtSrcLink" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="16" Margin="10,300,0,0">
                         <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp" RequestNavigate="Hyperlink_Click">Source available at github.com/ddm999/ClubmanSharp</Hyperlink>
+                    </TextBlock>
+                    <TextBlock Name="TxtUpdateLink" Visibility="Hidden" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="16" Margin="10,300,0,0">
+                        <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp/releases" RequestNavigate="Hyperlink_Click">Update to latest at github.com/ddm999/ClubmanSharp/releases</Hyperlink>
                     </TextBlock>
                 </Grid>
             </TabItem>

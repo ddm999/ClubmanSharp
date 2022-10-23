@@ -1,6 +1,8 @@
 ﻿using ClubmanSharp.TrackData;
+using NuGet.Versioning;
 using System;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -19,10 +21,13 @@ namespace ClubmanSharp
         private readonly Settings settings = Settings.Default;
         private DateTime nextUpdate = DateTime.UtcNow;
 
+        public SemanticVersion currentVersion = new(0, 9, 0, "alpha");
+
         public MainWindow()
         {
             InitializeComponent();
 
+            TxtHeader.Text = $"ClubmanSharp by ddm [v{currentVersion}]";
             ip = settings.ip;
             TxtIP.Text = ip;
 
@@ -72,6 +77,8 @@ namespace ClubmanSharp
                                 "This project uses https://github.com/ViGEm/ViGEm.NET, licensed under the MIT license.\n" +
                                 "Full terms can be found at:\n https://github.com/ViGEm/ViGEm.NET/blob/master/LICENSE\n\n" +
                                 "All developers of this project are not affiliated with Polyphony Digital or Sony Interactive Entertainment.";
+
+            UpdateCheck();
         }
 
         public void TooMuchStuckDetectionCheck()
@@ -89,6 +96,31 @@ namespace ClubmanSharp
                 else
                     msg += "Try using large custom delays, or increasing your network stability if possible.";
                 MessageBox.Show(msg, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
+        public async void UpdateCheck()
+        {
+            try
+            {
+                using var client = new HttpClient();
+                string serverResult = await client.GetStringAsync("http://gt-mod.site/ClubmanSharpVersion.txt");
+
+                SemanticVersionConverter converter = new SemanticVersionConverter();
+                SemanticVersion serverVersion = (SemanticVersion)converter.ConvertFromString(serverResult);
+                if (serverVersion > currentVersion)
+                {
+                    TxtSrcLink.Visibility = Visibility.Hidden;
+                    TxtUpdateLink.Visibility = Visibility.Visible;
+                    MessageBox.Show("A new version of ClubmanSharp is available to download.\n" +
+                                    "You may have issues using this out-of-date version.\n" +
+                                    "Download the latest version at https://github.com/ddm999/ClubmanSharp/releases\n" +
+                                    "(A link is available at the bottom of the Startup menu.)", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to check for updates.\nException details below:\n\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
