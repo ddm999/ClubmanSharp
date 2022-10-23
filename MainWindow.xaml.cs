@@ -63,12 +63,31 @@ namespace ClubmanSharp
                                 "All developers of this project are not affiliated with Polyphony Digital or Sony Interactive Entertainment.";
         }
 
+        public void TooMuchStuckDetectionCheck()
+        {
+            if (bot is null)
+                return;
+
+            if (bot.completedRaces >= 2 && (bot.stuckDetectionRuns >= (bot.completedRaces*0.05)))
+            {
+                string msg = "That last run had a lot of stuck detection attempts, which usually means your delays are too short.\n\n";
+                if (RadioDelayCustom.IsChecked is true)
+                    msg += "Try switching back to the defaults, or increasing your custom delays.";
+                else if (RadioDelayPS5.IsChecked is true)
+                    msg += "Try using the PS4 delays.";
+                else
+                    msg += "Try using large custom delays, or increasing your network stability if possible.";
+                MessageBox.Show(msg, "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+
         public void VisualLoop(object? sender, EventArgs? e)
         {
             if (bot.error is true)
             {
                 MessageBox.Show(bot.errorMsg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 bot.error = false;
+                TooMuchStuckDetectionCheck();
                 BtnStartStop.Content = "Start";
                 TxtIP.IsEnabled = true;
                 BtnStartStop.IsEnabled = true;
@@ -100,6 +119,8 @@ namespace ClubmanSharp
                 TxtState.Text += "Post Race";
             else if (bot.currentMenuState == Bot.MenuState.Stuck_PreOrPostRace)
                 TxtState.Text += "Stk Unknown";
+            else if (bot.currentMenuState == Bot.MenuState.Stuck_Replay)
+                TxtState.Text += "Stk Replay";
             else if (bot.currentMenuState == Bot.MenuState.Stuck_PostRace)
                 TxtState.Text += "Stk Post Race";
             else if (bot.currentMenuState == Bot.MenuState.Stuck_PreRace)
@@ -138,6 +159,7 @@ namespace ClubmanSharp
             else
             {
                 bot.Stop();
+                TooMuchStuckDetectionCheck();
                 BtnStartStop.Content = "Start";
                 TxtIP.IsEnabled = true;
                 BtnStartStop.IsEnabled = true;

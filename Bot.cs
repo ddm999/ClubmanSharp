@@ -29,6 +29,7 @@ namespace ClubmanSharp
         public string errorMsg = "";
 
         public int completedRaces = 0;
+        public int stuckDetectionRuns = 0;
 
         public TimeSpan fastestLap = new(0, 59, 59);
 
@@ -353,6 +354,7 @@ namespace ClubmanSharp
             Stuck_PreOrPostRace,
             Stuck_PostRace,
             Stuck_PreRace,
+            Stuck_Replay,
 
             Unknown = -1,
         }
@@ -379,6 +381,7 @@ namespace ClubmanSharp
             {
                 currentMenuState = MenuState.Stuck_PreOrPostRace;
                 _preRaceStuckCount = 0;
+                stuckDetectionRuns += 1;
             }
         }
 
@@ -691,6 +694,31 @@ namespace ClubmanSharp
                         currentMenuState = FindBaseMenuState(true);
                         if (currentMenuState == MenuState.PreRace)
                             currentMenuState = MenuState.Stuck_PostRace;
+                        if (currentMenuState == MenuState.Replay)
+                            currentMenuState = MenuState.Stuck_Replay;
+                    }
+                    else if (currentMenuState == MenuState.Stuck_Replay)
+                    {
+                        // get to the exit button
+                        for (int i = 0; i < 10; i++)
+                        {
+                            _ds4.SetDPadDirection(DualShock4DPadDirection.East);
+                            _ds4.SubmitReport();
+                            Thread.Sleep(50);
+                            _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                            _ds4.SubmitReport();
+                            Thread.Sleep(250);
+                        }
+                        // click exit
+                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(50);
+                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SubmitReport();
+                        Thread.Sleep(250);
+
+                        Thread.Sleep(3000);
+                        currentMenuState = MenuState.PostRace;
                     }
                     else if (currentMenuState == MenuState.Stuck_PostRace)
                     {
@@ -722,7 +750,7 @@ namespace ClubmanSharp
                     }
                     else if (currentMenuState == MenuState.Stuck_PreRace)
                     {
-                        Thread.Sleep(3000);
+                        Thread.Sleep(5000);
 
                         _ds4.SetButtonState(DualShock4Button.Cross, true);
                         _ds4.SubmitReport();
