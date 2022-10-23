@@ -187,7 +187,7 @@ namespace ClubmanSharp
                     var mph = currentPacket.MetersPerSecond * 2.23694;
                     var rotn = (1 - currentPacket.RelativeOrientationToNorth) * 180;
 
-                    var targets = TrackData.GetTargets(currentPacket.Position.X, currentPacket.Position.Z);
+                    var targets = TrackData.GetTargets(currentPacket.Position.X, currentPacket.Position.Z, currentPacket.LapCount);
                     var targetMph = targets.Item1;
                     var targetOrientation = targets.Item2;
 
@@ -547,6 +547,8 @@ namespace ClubmanSharp
                 }
             }
 
+            TrackData.NewRace();
+
             bool ok = true;
             bool registeredResult = false;
             while (ok)
@@ -599,6 +601,8 @@ namespace ClubmanSharp
                         Thread.Sleep(50);
                         _ds4.SetButtonState(DualShock4Button.Cross, false);
                         _ds4.SubmitReport();
+
+                        TrackData.NewRace();
                     }
                     else if (currentMenuState == MenuState.Replay)
                     {

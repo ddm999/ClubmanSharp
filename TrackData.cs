@@ -29,6 +29,24 @@ namespace ClubmanSharp
 
     public class TrackData
     {
+        static bool _useInitialSegments = true;
+
+        static readonly Segment[] initialsegments =
+        {
+          new Segment( 160,  775,  195,  875,  -70.0, 300.0),
+          new Segment(  58,  775,  160,  875,   -1.0, 300.0),
+          new Segment(-120,  775,   58,  875,  -44.0, 300.0),
+          new Segment(-280,  750, -120,  850,  -33.0, 300.0),
+          new Segment(-344,  725, -280,  825,  -42.5, 300.0),
+          new Segment(-430,  700, -344,  800,  -47.0, 300.0),
+          new Segment(-450,  675, -430,  775,  -49.0, 300.0), // T1 entry
+          new Segment(-556,  650, -450,  750,   -3.2, 300.0), // T1
+          
+          // ensure the start of the race is in these segments
+          new Segment( 200,  680,  300,  710, -171.0, 300.0), // T15 entry
+          new Segment( 195,  710,  275,  850,  -95.0, 300.0), // T15
+        };
+
         static readonly Segment[] segments =
         {
           new Segment( 160,  775,  195,  875,  -70.0, 300.0),
@@ -75,19 +93,44 @@ namespace ClubmanSharp
           new Segment( 195,  710,  275,  850,  -95.0, 300.0), // T15
         };
 
-        internal static (double, double) GetTargets(float x, float z)
+        internal static void NewRace()
+        {
+            _useInitialSegments = true;
+        }
+
+        internal static (double, double) GetTargets(float x, float z, int lap)
         {
             var ix = (int)x;
             var iz = (int)z;
-            var segmentnum = 0;
+            var segmentNum = 0;
+
+            if (_useInitialSegments)
+            {
+                foreach (Segment segment in initialsegments)
+                {
+                    segmentNum++;
+                    if (ix >= segment.minX && ix <= segment.maxX &&
+                    iz >= segment.minZ && iz <= segment.maxZ)
+                    {
+                        //Trace.WriteLine($"seg: {segmentNum}");
+                        return (segment.mph, segment.heading);
+                    }
+                }
+
+                segmentNum = 0;
+                // we've left the initial segment area, so switch to regular segments
+                _useInitialSegments = false;
+
+                //Trace.WriteLine("Left initial segments.");
+            }
+
             foreach (Segment segment in segments)
             {
-                segmentnum++;
+                segmentNum++;
                 if (ix >= segment.minX && ix <= segment.maxX &&
                     iz >= segment.minZ && iz <= segment.maxZ)
                 {
-                    //Trace.WriteLine($"In segment {segmentnum}: ({segment.heading}, {segment.mph})");
-
+                    //Trace.WriteLine($"seg: {segmentNum}");
                     return (segment.mph, segment.heading);
                 }
             }
