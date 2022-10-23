@@ -169,9 +169,9 @@ namespace ClubmanSharp
         private void RadioDelayPS5_Checked(object sender, RoutedEventArgs e)
         {
             CustomDelayShort.Text = "250";
-            CustomDelayLong.Text = "750";
+            CustomDelayLong.Text = "1000";
             bot.ShortDelay = 250;
-            bot.LongDelay = 750;
+            bot.LongDelay = 1000;
             CustomDelayShort.IsEnabled = false;
             CustomDelayLong.IsEnabled = false;
             RadioDelayPS4.IsChecked = false;
