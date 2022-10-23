@@ -14,5 +14,8 @@
     <Setting Name="delaySetting" Type="System.Byte" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="carSetting" Type="System.Byte" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

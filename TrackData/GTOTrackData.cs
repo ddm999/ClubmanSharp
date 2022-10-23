@@ -5,33 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ClubmanSharp
+namespace ClubmanSharp.TrackData
 {
-    struct Segment
+    public class GTOTrackData : TrackDataBase
     {
-        public int minX;
-        public int minZ;
-        public int maxX;
-        public int maxZ;
-        public double heading;
-        public double mph;
-
-        public Segment(int minX, int minZ, int maxX, int maxZ, double heading, double mph)
-        {
-            this.minX = minX;
-            this.minZ = minZ;
-            this.maxX = maxX;
-            this.maxZ = maxZ;
-            this.heading = heading;
-            this.mph = mph;
-        }
-    }
-
-    public class TrackData
-    {
-        static bool _useInitialSegments = true;
-
-        static readonly Segment[] initialsegments =
+        public override Segment[] initialsegments { get; } =
         {
           new Segment( 160,  775,  195,  875,  -70.0, 300.0),
           new Segment(  58,  775,  160,  875,   -1.0, 300.0),
@@ -47,7 +25,7 @@ namespace ClubmanSharp
           new Segment( 195,  710,  275,  850,  -95.0, 300.0), // T15
         };
 
-        static readonly Segment[] segments =
+        public override Segment[] segments { get; } =
         {
           new Segment( 160,  775,  195,  875,  -70.0, 300.0),
           new Segment(  66,  775,  160,  875,  -46.0, 300.0),
@@ -92,50 +70,5 @@ namespace ClubmanSharp
           new Segment( 200,  680,  300,  710, -171.0, 300.0), // T15 entry
           new Segment( 195,  710,  275,  850,  -95.0, 300.0), // T15
         };
-
-        internal static void NewRace()
-        {
-            _useInitialSegments = true;
-        }
-
-        internal static (double, double) GetTargets(float x, float z, int lap)
-        {
-            var ix = (int)x;
-            var iz = (int)z;
-            var segmentNum = 0;
-
-            if (_useInitialSegments)
-            {
-                foreach (Segment segment in initialsegments)
-                {
-                    segmentNum++;
-                    if (ix >= segment.minX && ix <= segment.maxX &&
-                    iz >= segment.minZ && iz <= segment.maxZ)
-                    {
-                        //Trace.WriteLine($"seg: {segmentNum}");
-                        return (segment.mph, segment.heading);
-                    }
-                }
-
-                segmentNum = 0;
-                // we've left the initial segment area, so switch to regular segments
-                _useInitialSegments = false;
-
-                //Trace.WriteLine("Left initial segments.");
-            }
-
-            foreach (Segment segment in segments)
-            {
-                segmentNum++;
-                if (ix >= segment.minX && ix <= segment.maxX &&
-                    iz >= segment.minZ && iz <= segment.maxZ)
-                {
-                    //Trace.WriteLine($"seg: {segmentNum}");
-                    return (segment.mph, segment.heading);
-                }
-            }
-
-            return (30.0, 360.0);
-        }
     }
 }

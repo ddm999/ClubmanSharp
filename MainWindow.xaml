@@ -51,15 +51,15 @@
                         <!--
                         <RadioButton Name="RadioCarAuto" IsChecked="True" Content="Auto" Foreground="#DDD" FontSize="16" Margin="110,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         -->
-                        <RadioButton Name="RadioCarGTO" IsChecked="True" Content="GTO" Foreground="#DDD" FontSize="16" Margin="180,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                        <RadioButton Name="RadioCarGTO" Checked="RadioCarGTO_Checked" IsChecked="False" Content="GTO" Foreground="#DDD" FontSize="16" Margin="180,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                        <RadioButton Name="RadioCarWRX" Visibility="Hidden" Checked="RadioCarWRX_Checked" IsChecked="False" Content="WRX" Foreground="#DDD" FontSize="16" Margin="240,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <!--
-                        <RadioButton Name="RadioCarR33" IsChecked="False" Content="R33" Foreground="#DDD" FontSize="16" Margin="240,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <RadioButton Name="RadioCarR34" IsChecked="False" Content="R34" Foreground="#DDD" FontSize="16" Margin="300,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         -->
                     </Grid>
                     <Grid>
                         <TextBlock Name="TxtDelay" Text="Menu Delay Settings:" Foreground="#DDD" FontSize="16" Margin="10,40,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                        <RadioButton Name="RadioDelayPS4" Checked="RadioDelayPS4_Checked" IsChecked="True" Content="PS4" Foreground="#DDD" FontSize="16" Margin="180,42,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                        <RadioButton Name="RadioDelayPS4" Checked="RadioDelayPS4_Checked" IsChecked="False" Content="PS4" Foreground="#DDD" FontSize="16" Margin="180,42,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <RadioButton Name="RadioDelayPS5" Checked="RadioDelayPS5_Checked" IsChecked="False" Content="PS5" Foreground="#DDD" FontSize="16" Margin="240,42,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <RadioButton Name="RadioDelayCustom" Checked="RadioDelayCustom_Checked" IsChecked="False" Content="Custom" Foreground="#DDD" FontSize="16" Margin="300,42,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <TextBlock Name="TxtCustomDelay" Text="Custom Delays (ms):" Foreground="#DDD" FontSize="16" Margin="10,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClubmanSharp.TrackData;
+using System;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
@@ -40,6 +41,16 @@ namespace ClubmanSharp
                     break;
                 case 2:
                     RadioDelayCustom.IsChecked = true;
+                    break;
+            }
+
+            switch (settings.carSetting)
+            {
+                case 0:
+                    RadioCarGTO.IsChecked = true;
+                    break;
+                case 1:
+                    RadioCarWRX.IsChecked = true;
                     break;
             }
 
@@ -87,6 +98,8 @@ namespace ClubmanSharp
             {
                 MessageBox.Show(bot.errorMsg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 bot.error = false;
+                bot.Stop();
+                isStarted = false;
                 TooMuchStuckDetectionCheck();
                 BtnStartStop.Content = "Start";
                 TxtIP.IsEnabled = true;
@@ -258,6 +271,28 @@ namespace ClubmanSharp
                 MessageBox.Show($"Invalid delay of {CustomDelayLong.Text}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 CustomDelayLong.Text = $"{bot.LongDelay}";
             }
+        }
+
+        private void RadioCarGTO_Checked(object sender, RoutedEventArgs e)
+        {
+            if (bot is null)
+                return;
+            bot.currentTrackData = new GTOTrackData();
+
+            RadioCarWRX.IsChecked = false;
+            settings.carSetting = 0;
+            settings.Save();
+        }
+
+        private void RadioCarWRX_Checked(object sender, RoutedEventArgs e)
+        {
+            if (bot is null)
+                return;
+            bot.currentTrackData = new WRXTrackData();
+
+            RadioCarGTO.IsChecked = false;
+            settings.carSetting = 1;
+            settings.Save();
         }
     }
 }

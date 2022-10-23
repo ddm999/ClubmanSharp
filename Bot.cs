@@ -6,6 +6,7 @@ using Nefarius.ViGEm.Client.Targets;
 using Nefarius.ViGEm.Client.Targets.DualShock4;
 using System.Diagnostics;
 using System.Threading;
+using ClubmanSharp.TrackData;
 
 namespace ClubmanSharp
 {
@@ -17,6 +18,7 @@ namespace ClubmanSharp
         private int _preRaceStuckCount = 0;
 
         public SimulatorPacket? currentPacket = null;
+        public TrackDataBase? currentTrackData = null;
 
         public const int TimeOut = 10;
         public TimeSpan TimeOutSpan = new(0, 0, TimeOut);
@@ -30,6 +32,7 @@ namespace ClubmanSharp
 
         public int completedRaces = 0;
         public int stuckDetectionRuns = 0;
+
 
         public TimeSpan fastestLap = new(0, 59, 59);
 
@@ -154,7 +157,7 @@ namespace ClubmanSharp
 
         private void DriverLoop()
         {
-            if (_ds4 is null)
+            if (_ds4 is null || currentTrackData is null)
             {
                 connected = false;
                 error = true;
@@ -187,7 +190,7 @@ namespace ClubmanSharp
                     var mph = currentPacket.MetersPerSecond * 2.23694;
                     var rotn = (1 - currentPacket.RelativeOrientationToNorth) * 180;
 
-                    var targets = TrackData.GetTargets(currentPacket.Position.X, currentPacket.Position.Z, currentPacket.LapCount);
+                    var targets = currentTrackData.GetTargets(currentPacket.Position.X, currentPacket.Position.Z, currentPacket.LapCount);
                     var targetMph = targets.Item1;
                     var targetOrientation = targets.Item2;
 
@@ -547,7 +550,7 @@ namespace ClubmanSharp
                 }
             }
 
-            TrackData.NewRace();
+            currentTrackData.NewRace();
 
             bool ok = true;
             bool registeredResult = false;
@@ -602,7 +605,7 @@ namespace ClubmanSharp
                         _ds4.SetButtonState(DualShock4Button.Cross, false);
                         _ds4.SubmitReport();
 
-                        TrackData.NewRace();
+                        currentTrackData.NewRace();
                     }
                     else if (currentMenuState == MenuState.Replay)
                     {

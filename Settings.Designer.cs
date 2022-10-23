@@ -70,5 +70,17 @@ namespace ClubmanSharp {
                 this["delaySetting"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public byte carSetting {
+            get {
+                return ((byte)(this["carSetting"]));
+            }
+            set {
+                this["carSetting"] = value;
+            }
+        }
     }
 }
