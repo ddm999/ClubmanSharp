@@ -7,6 +7,19 @@
         mc:Ignorable="d"
         Title="ClubmanSharp" Height="400" Width="500" MinHeight="400" MinWidth="500" MaxHeight="400" MaxWidth="500">
     <Grid Background="#222">
+        <Grid.Resources>
+            <Style x:Key="{x:Type Hyperlink}" TargetType="{x:Type Hyperlink}">
+                <Setter Property="Foreground" Value="#4f9fff"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Foreground" Value="Red"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="True">
+                        <Setter Property="Cursor" Value="Hand"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Resources>
         <TabControl Background="#222">
             <TabItem Header="Startup">
                 <Grid Background="#222">
