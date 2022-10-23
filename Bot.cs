@@ -648,7 +648,7 @@ namespace ClubmanSharp
                     }
                     else if (currentMenuState == MenuState.Stuck_PreOrPostRace)
                     {
-                        Thread.Sleep(LongDelay);
+                        Thread.Sleep(3000);
                         // ensure we're hovered over start race
 
                         // first, smash the hell out of the circle button
@@ -659,7 +659,7 @@ namespace ClubmanSharp
                             Thread.Sleep(50);
                             _ds4.SetButtonState(DualShock4Button.Circle, false);
                             _ds4.SubmitReport();
-                            Thread.Sleep(ShortDelay);
+                            Thread.Sleep(250);
                         }
                         // then smash the hell out of left dpad
                         for (int i = 0; i < 5; i++)
@@ -669,7 +669,7 @@ namespace ClubmanSharp
                             Thread.Sleep(50);
                             _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                             _ds4.SubmitReport();
-                            Thread.Sleep(ShortDelay);
+                            Thread.Sleep(250);
                         }
                         // then press down
                         _ds4.SetDPadDirection(DualShock4DPadDirection.South);
@@ -677,7 +677,7 @@ namespace ClubmanSharp
                         Thread.Sleep(50);
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                         _ds4.SubmitReport();
-                        Thread.Sleep(ShortDelay);
+                        Thread.Sleep(250);
                         // and finally, click start race
                         _ds4.SetButtonState(DualShock4Button.Cross, true);
                         _ds4.SubmitReport();
@@ -685,7 +685,7 @@ namespace ClubmanSharp
                         _ds4.SetButtonState(DualShock4Button.Cross, false);
                         _ds4.SubmitReport();
 
-                        Thread.Sleep(1000 + LongDelay);
+                        Thread.Sleep(5000);
 
                         // if we're still in pre-race, it's actually post-race
                         currentMenuState = FindBaseMenuState(true);
@@ -702,7 +702,7 @@ namespace ClubmanSharp
                             Thread.Sleep(50);
                             _ds4.SetButtonState(DualShock4Button.Circle, false);
                             _ds4.SubmitReport();
-                            Thread.Sleep(ShortDelay);
+                            Thread.Sleep(250);
                         }
                         // then press left
                         _ds4.SetDPadDirection(DualShock4DPadDirection.West);
@@ -710,7 +710,7 @@ namespace ClubmanSharp
                         Thread.Sleep(50);
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                         _ds4.SubmitReport();
-                        Thread.Sleep(ShortDelay);
+                        Thread.Sleep(250);
                         // and finally, click retry
                         _ds4.SetButtonState(DualShock4Button.Cross, true);
                         _ds4.SubmitReport();
@@ -722,7 +722,7 @@ namespace ClubmanSharp
                     }
                     else if (currentMenuState == MenuState.Stuck_PreRace)
                     {
-                        Thread.Sleep(LongDelay);
+                        Thread.Sleep(3000);
 
                         _ds4.SetButtonState(DualShock4Button.Cross, true);
                         _ds4.SubmitReport();
@@ -730,7 +730,7 @@ namespace ClubmanSharp
                         _ds4.SetButtonState(DualShock4Button.Cross, false);
                         _ds4.SubmitReport();
 
-                        Thread.Sleep(1000 + LongDelay);
+                        Thread.Sleep(5000);
 
                         currentMenuState = MenuState.PreRace;
                         currentMenuState = FindNewMenuState();
