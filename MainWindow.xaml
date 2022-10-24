@@ -71,6 +71,11 @@
                         <TextBlock Name="TxtCustomDelayLong" Text="Long:" Foreground="#DDD" FontSize="16" Margin="290,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <TextBox Name="CustomDelayLong" IsEnabled="False" TextChanged="CustomDelayLong_TextChanged" Text="3000" Width="52" Foreground="#DDD" Background="#333" FontSize="16" Margin="340,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                     </Grid>
+                    <Grid>
+                        <TextBlock Name="TxtThrottle" Text="Max Throttle (Laps 3-5)" Foreground="#DDD" FontSize="16" Margin="10,100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <TextBlock Name="TxtThrottleValue" Text="255" Foreground="#DDD" FontSize="16" Margin="430,100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <Slider Name="SliderThrottle" ValueChanged="SliderThrottle_ValueChanged"  Minimum="200" Maximum="255" Value="255" Width="240" Height="20" Margin="180,103,0,0"  HorizontalAlignment="Left" VerticalAlignment="Top" ToolTip="255/255"/>
+                    </Grid>
                 </Grid>
             </TabItem>
             <TabItem Header="Licensing">

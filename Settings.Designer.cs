@@ -82,5 +82,17 @@ namespace ClubmanSharp {
                 this["carSetting"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("255")]
+        public byte maxThrottle {
+            get {
+                return ((byte)(this["maxThrottle"]));
+            }
+            set {
+                this["maxThrottle"] = value;
+            }
+        }
     }
 }

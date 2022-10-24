@@ -25,6 +25,7 @@ namespace ClubmanSharp
 
         public int ShortDelay = 250;
         public int LongDelay = 3000;
+        public byte LateRaceMaxThrottle = 255;
 
         public bool connected = false;
         public bool error = false;
@@ -242,7 +243,11 @@ namespace ClubmanSharp
                         }
                         // accel
                         _ds4.SetButtonState(DualShock4Button.TriggerRight, true);
-                        _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 255);
+
+                        if (currentPacket.LapCount <= 2) // first 2 laps, full throttle
+                            _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 255);
+                        else // later laps, slow for traffic based on option
+                            _ds4.SetSliderValue(DualShock4Slider.RightTrigger, LateRaceMaxThrottle);
                     }
 
                     // turn towards target line
@@ -757,7 +762,7 @@ namespace ClubmanSharp
                     }
                     else if (currentMenuState == MenuState.Stuck_PreRace)
                     {
-                        Thread.Sleep(5000);
+                        Thread.Sleep(8000);
 
                         _ds4.SetButtonState(DualShock4Button.Cross, true);
                         _ds4.SubmitReport();

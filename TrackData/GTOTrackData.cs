@@ -16,9 +16,9 @@ namespace ClubmanSharp.TrackData
           new Segment(-120,  775,   58,  875,  -44.0, 300.0),
           new Segment(-280,  750, -120,  850,  -33.0, 300.0),
           new Segment(-344,  725, -280,  825,  -42.5, 300.0),
-          new Segment(-430,  700, -344,  800,  -47.0, 300.0),
-          new Segment(-450,  675, -430,  775,  -49.0, 300.0), // T1 entry
-          new Segment(-556,  650, -450,  750,   -3.2, 300.0), // T1
+          new Segment(-360,  700, -344,  800,  -44.0, 300.0),
+          new Segment(-450,  700, -360,  800,  -44.0, 300.0),
+          new Segment(-556,  650, -450,  750,   -1.0, 300.0), // T1
           
           // ensure the start of the race is in these segments
           new Segment( 200,  680,  300,  710, -171.0, 300.0), // T15 entry

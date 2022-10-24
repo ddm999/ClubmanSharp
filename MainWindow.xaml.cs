@@ -21,7 +21,7 @@ namespace ClubmanSharp
         private readonly Settings settings = Settings.Default;
         private DateTime nextUpdate = DateTime.UtcNow;
 
-        public SemanticVersion currentVersion = new(0, 9, 0, "alpha");
+        public SemanticVersion currentVersion = new(0, 9, 1, "beta");
 
         public MainWindow()
         {
@@ -35,6 +35,8 @@ namespace ClubmanSharp
 
             CustomDelayShort.Text = $"{settings.customShortDelay}";
             CustomDelayLong.Text = $"{settings.customLongDelay}";
+
+            SliderThrottle.Value = Convert.ToDouble(settings.maxThrottle);
 
             switch (settings.delaySetting)
             {
@@ -68,7 +70,7 @@ namespace ClubmanSharp
 
             TxtShortHelp.Text = "Turn on a password requirement for PlayStation purchases before using any script.\n" +
                                 "It is recommended to use HidHide to prevent the bot interacting with your desktop.\n\n" +
-                                "You must start Remote Play with no controller connected to your PC. It cannot be minimised, but you can move other programs above it.\n\n" +
+                                "You must start Remote Play with no controller connected to your PC.\n\n" +
                                 "Enter your PS4/PS5's local IP address and hit Start while on the Tokyo Clubman+ pre-race menu.";
 
             TxtLicensing.Text = "This project is licensed under the European Union Public License 1.2 (EUPL-1.2).\n" +
@@ -324,6 +326,20 @@ namespace ClubmanSharp
 
             RadioCarGTO.IsChecked = false;
             settings.carSetting = 1;
+            settings.Save();
+        }
+
+        private void SliderThrottle_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            byte byteVal = Convert.ToByte(SliderThrottle.Value);
+            SliderThrottle.ToolTip = $"{byteVal}/255";
+            TxtThrottleValue.Text = $"{byteVal}";
+
+            if (bot is null)
+                return;
+
+            bot.LateRaceMaxThrottle = byteVal;
+            settings.maxThrottle = byteVal;
             settings.Save();
         }
     }
