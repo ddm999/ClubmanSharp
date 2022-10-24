@@ -21,7 +21,7 @@ namespace ClubmanSharp
         private readonly Settings settings = Settings.Default;
         private DateTime nextUpdate = DateTime.UtcNow;
 
-        public SemanticVersion currentVersion = new(0, 9, 1, "beta");
+        public SemanticVersion currentVersion = new(1, 0, 0);
 
         public MainWindow()
         {
@@ -51,15 +51,8 @@ namespace ClubmanSharp
                     break;
             }
 
-            switch (settings.carSetting)
-            {
-                case 0:
-                    RadioCarGTO.IsChecked = true;
-                    break;
-                case 1:
-                    RadioCarWRX.IsChecked = true;
-                    break;
-            }
+            // WRX data wasn't actually required after all
+            RadioCarGTO.IsChecked = true;
 
             CompositionTarget.Rendering += VisualLoop;
 
@@ -320,13 +313,13 @@ namespace ClubmanSharp
 
         private void RadioCarWRX_Checked(object sender, RoutedEventArgs e)
         {
-            if (bot is null)
+            /*if (bot is null)
                 return;
             bot.currentTrackData = new WRXTrackData();
 
             RadioCarGTO.IsChecked = false;
             settings.carSetting = 1;
-            settings.Save();
+            settings.Save();*/
         }
 
         private void SliderThrottle_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

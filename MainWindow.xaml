@@ -50,11 +50,11 @@
             <TabItem Header="Settings">
                 <Grid Background="#222">
                     <Grid>
-                        <TextBlock Name="TxtCar" Text="Used Tune:" Foreground="#DDD" FontSize="16" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <TextBlock Name="TxtCar" Visibility="Hidden" Text="Used Tune:" Foreground="#DDD" FontSize="16" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <!--
                         <RadioButton Name="RadioCarAuto" IsChecked="True" Content="Auto" Foreground="#DDD" FontSize="16" Margin="110,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         -->
-                        <RadioButton Name="RadioCarGTO" Checked="RadioCarGTO_Checked" IsChecked="False" Content="GTO" Foreground="#DDD" FontSize="16" Margin="180,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                        <RadioButton Name="RadioCarGTO" Visibility="Hidden" Checked="RadioCarGTO_Checked" IsChecked="False" Content="GTO" Foreground="#DDD" FontSize="16" Margin="180,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <RadioButton Name="RadioCarWRX" Visibility="Hidden" Checked="RadioCarWRX_Checked" IsChecked="False" Content="WRX" Foreground="#DDD" FontSize="16" Margin="240,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <!--
                         <RadioButton Name="RadioCarR34" IsChecked="False" Content="R34" Foreground="#DDD" FontSize="16" Margin="300,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
