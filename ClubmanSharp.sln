@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.31903.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClubmanSharp", "ClubmanSharp.csproj", "{ADB7103F-FFA5-4B73-8C7A-FF2641EAE043}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClubmanSharp", "ClubmanSharp.csproj", "{ADB7103F-FFA5-4B73-8C7A-FF2641EAE043}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PDTools.SimulatorInterface", "PDTools\PDTools.SimulatorInterface\PDTools.SimulatorInterface.csproj", "{402C0BFC-74AE-40F2-BBAF-D5F81122569E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PDTools.Crypto", "PDTools\PDTools.Crypto\PDTools.Crypto.csproj", "{DE530CBC-3409-4BBD-80B8-5EF5AB7DF0F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{ADB7103F-FFA5-4B73-8C7A-FF2641EAE043}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADB7103F-FFA5-4B73-8C7A-FF2641EAE043}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADB7103F-FFA5-4B73-8C7A-FF2641EAE043}.Release|Any CPU.Build.0 = Release|Any CPU
+		{402C0BFC-74AE-40F2-BBAF-D5F81122569E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{402C0BFC-74AE-40F2-BBAF-D5F81122569E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{402C0BFC-74AE-40F2-BBAF-D5F81122569E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{402C0BFC-74AE-40F2-BBAF-D5F81122569E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE530CBC-3409-4BBD-80B8-5EF5AB7DF0F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE530CBC-3409-4BBD-80B8-5EF5AB7DF0F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE530CBC-3409-4BBD-80B8-5EF5AB7DF0F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE530CBC-3409-4BBD-80B8-5EF5AB7DF0F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

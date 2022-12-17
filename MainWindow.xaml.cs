@@ -69,6 +69,8 @@ namespace ClubmanSharp
             TxtLicensing.Text = "This project is licensed under the European Union Public License 1.2 (EUPL-1.2).\n" +
                                 "This is a copyleft free/open-source software license. (This is not legal advice.)\n" +
                                 "Full terms can be found at:\n https://github.com/ddm999/ClubmanSharp/blob/main/LICENSE\n\n" +
+                                "This project uses https://github.com/Nenkai/PDTools, licensed under the MIT license.\n" +
+                                "Full terms can be found at:\n https://github.com/Nenkai/PDTools/blob/master/LICENSE\n\n" +
                                 "This project uses https://github.com/ViGEm/ViGEm.NET, licensed under the MIT license.\n" +
                                 "Full terms can be found at:\n https://github.com/ViGEm/ViGEm.NET/blob/master/LICENSE\n\n" +
                                 "All developers of this project are not affiliated with Polyphony Digital or Sony Interactive Entertainment.";

@@ -8,17 +8,22 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="PDTools\**" />
+    <EmbeddedResource Remove="PDTools\**" />
+    <None Remove="PDTools\**" />
+    <Page Remove="PDTools\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Nefarius.ViGEm.Client" Version="1.21.230" />
     <PackageReference Include="NuGet.Versioning" Version="6.3.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="PDTools.Crypto">
-      <HintPath>..\PDTools\PDTools.SimulatorInterface\bin\Release\net6.0\PDTools.Crypto.dll</HintPath>
-    </Reference>
-    <Reference Include="PDTools.SimulatorInterface">
-      <HintPath>..\PDTools\PDTools.SimulatorInterface\bin\Release\net6.0\PDTools.SimulatorInterface.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="PDTools\PDTools.SimulatorInterface\PDTools.SimulatorInterface.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Syroot.BinaryData">
       <HintPath>..\PDTools\PDTools.SimulatorInterface\bin\Release\net6.0\Syroot.BinaryData.dll</HintPath>
     </Reference>
