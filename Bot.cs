@@ -28,6 +28,9 @@ namespace ClubmanSharp
         public int LongDelay = 3000;
         public byte LateRaceMaxThrottle = 255;
 
+        public DualShock4Button confirmButton = DualShock4Button.Cross;
+        public DualShock4Button cancelButton = DualShock4Button.Circle;
+
         public bool connected = false;
         public bool error = false;
         public string errorMsg = "";
@@ -479,10 +482,10 @@ namespace ClubmanSharp
                     // first, smash the hell out of the circle button
                     for (int i = 0; i < 5; i++)
                     {
-                        _ds4.SetButtonState(DualShock4Button.Circle, true);
+                        _ds4.SetButtonState(cancelButton, true);
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
-                        _ds4.SetButtonState(DualShock4Button.Circle, false);
+                        _ds4.SetButtonState(cancelButton, false);
                         _ds4.SubmitReport();
                         Thread.Sleep(ShortDelay);
                     }
@@ -504,10 +507,10 @@ namespace ClubmanSharp
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
                     // and finally, click start race
-                    _ds4.SetButtonState(DualShock4Button.Cross, true);
+                    _ds4.SetButtonState(confirmButton, true);
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
-                    _ds4.SetButtonState(DualShock4Button.Cross, false);
+                    _ds4.SetButtonState(confirmButton, false);
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
                 }
@@ -543,10 +546,10 @@ namespace ClubmanSharp
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
                     // and click to restart race
-                    _ds4.SetButtonState(DualShock4Button.Cross, true);
+                    _ds4.SetButtonState(confirmButton, true);
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
-                    _ds4.SetButtonState(DualShock4Button.Cross, false);
+                    _ds4.SetButtonState(confirmButton, false);
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
 
@@ -620,10 +623,10 @@ namespace ClubmanSharp
                             currentTrackData.NewRace();
                         }
 
-                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SetButtonState(confirmButton, true);
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
-                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SetButtonState(confirmButton, false);
                         _ds4.SubmitReport();
                     }
                     else if (currentMenuState == MenuState.Replay)
@@ -635,10 +638,10 @@ namespace ClubmanSharp
 
                         for (int i = 0; i < 2; i++)
                         {
-                            _ds4.SetButtonState(DualShock4Button.Cross, true);
+                            _ds4.SetButtonState(confirmButton, true);
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
-                            _ds4.SetButtonState(DualShock4Button.Cross, false);
+                            _ds4.SetButtonState(confirmButton, false);
                             _ds4.SubmitReport();
                             Thread.Sleep(ShortDelay);
                         }
@@ -655,10 +658,10 @@ namespace ClubmanSharp
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                         _ds4.SubmitReport();
                         Thread.Sleep(ShortDelay);
-                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SetButtonState(confirmButton, true);
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
-                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SetButtonState(confirmButton, false);
                         _ds4.SubmitReport();
 
                         _preRaceStuckCount = 0;
@@ -668,10 +671,10 @@ namespace ClubmanSharp
                     {
                         Thread.Sleep(LongDelay);
 
-                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SetButtonState(confirmButton, true);
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
-                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SetButtonState(confirmButton, false);
                         _ds4.SubmitReport();
 
                         Thread.Sleep(LongDelay);
@@ -684,10 +687,10 @@ namespace ClubmanSharp
                         // first, smash the hell out of the circle button
                         for (int i = 0; i < 5; i++)
                         {
-                            _ds4.SetButtonState(DualShock4Button.Circle, true);
+                            _ds4.SetButtonState(cancelButton, true);
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
-                            _ds4.SetButtonState(DualShock4Button.Circle, false);
+                            _ds4.SetButtonState(cancelButton, false);
                             _ds4.SubmitReport();
                             Thread.Sleep(250);
                         }
@@ -709,10 +712,10 @@ namespace ClubmanSharp
                         _ds4.SubmitReport();
                         Thread.Sleep(250);
                         // and finally, click start race
-                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SetButtonState(confirmButton, true);
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
-                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SetButtonState(confirmButton, false);
                         _ds4.SubmitReport();
 
                         Thread.Sleep(5000);
@@ -737,10 +740,10 @@ namespace ClubmanSharp
                             Thread.Sleep(250);
                         }
                         // click exit
-                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SetButtonState(confirmButton, true);
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
-                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SetButtonState(confirmButton, false);
                         _ds4.SubmitReport();
                         Thread.Sleep(250);
 
@@ -752,10 +755,10 @@ namespace ClubmanSharp
                         // first, smash the hell out of the circle button
                         for (int i = 0; i < 5; i++)
                         {
-                            _ds4.SetButtonState(DualShock4Button.Circle, true);
+                            _ds4.SetButtonState(cancelButton, true);
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
-                            _ds4.SetButtonState(DualShock4Button.Circle, false);
+                            _ds4.SetButtonState(cancelButton, false);
                             _ds4.SubmitReport();
                             Thread.Sleep(250);
                         }
@@ -767,10 +770,10 @@ namespace ClubmanSharp
                         _ds4.SubmitReport();
                         Thread.Sleep(250);
                         // and finally, click retry
-                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SetButtonState(confirmButton, true);
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
-                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SetButtonState(confirmButton, false);
                         _ds4.SubmitReport();
 
                         currentMenuState = MenuState.Stuck_PreRace;
@@ -779,10 +782,10 @@ namespace ClubmanSharp
                     {
                         Thread.Sleep(8000);
 
-                        _ds4.SetButtonState(DualShock4Button.Cross, true);
+                        _ds4.SetButtonState(confirmButton, true);
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
-                        _ds4.SetButtonState(DualShock4Button.Cross, false);
+                        _ds4.SetButtonState(confirmButton, false);
                         _ds4.SubmitReport();
 
                         Thread.Sleep(5000);

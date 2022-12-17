@@ -1,4 +1,5 @@
 ﻿using ClubmanSharp.TrackData;
+using Nefarius.ViGEm.Client.Targets.DualShock4;
 using NuGet.Versioning;
 using System;
 using System.Diagnostics;
@@ -48,6 +49,16 @@ namespace ClubmanSharp
                     break;
                 case 2:
                     RadioDelayCustom.IsChecked = true;
+                    break;
+            }
+
+            switch (settings.confirmButton)
+            {
+                case 0:
+                    RadioConfirmCross.IsChecked = true;
+                    break;
+                case 1:
+                    RadioConfirmCircle.IsChecked = true;
                     break;
             }
 
@@ -103,7 +114,7 @@ namespace ClubmanSharp
                 using var client = new HttpClient();
                 string serverResult = await client.GetStringAsync("http://gt-mod.site/ClubmanSharpVersion.txt");
 
-                SemanticVersionConverter converter = new SemanticVersionConverter();
+                SemanticVersionConverter converter = new();
                 SemanticVersion serverVersion = (SemanticVersion)converter.ConvertFromString(serverResult);
                 if (serverVersion > currentVersion)
                 {
@@ -335,6 +346,30 @@ namespace ClubmanSharp
 
             bot.LateRaceMaxThrottle = byteVal;
             settings.maxThrottle = byteVal;
+            settings.Save();
+        }
+
+        private void RadioConfirmCross_Checked(object sender, RoutedEventArgs e)
+        {
+            if (bot is null)
+                return;
+            bot.confirmButton = DualShock4Button.Cross;
+            bot.cancelButton = DualShock4Button.Circle;
+
+            RadioConfirmCircle.IsChecked = false;
+            settings.confirmButton = 0;
+            settings.Save();
+        }
+
+        private void RadioConfirmCircle_Checked(object sender, RoutedEventArgs e)
+        {
+            if (bot is null)
+                return;
+            bot.confirmButton = DualShock4Button.Circle;
+            bot.cancelButton = DualShock4Button.Cross;
+
+            RadioConfirmCross.IsChecked = false;
+            settings.confirmButton = 1;
             settings.Save();
         }
     }

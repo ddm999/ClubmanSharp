@@ -76,6 +76,11 @@
                         <TextBlock Name="TxtThrottleValue" Text="255" Foreground="#DDD" FontSize="16" Margin="430,100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <Slider Name="SliderThrottle" ValueChanged="SliderThrottle_ValueChanged"  Minimum="200" Maximum="255" Value="255" Width="240" Height="20" Margin="180,103,0,0"  HorizontalAlignment="Left" VerticalAlignment="Top" ToolTip="255/255"/>
                     </Grid>
+                    <Grid>
+                        <TextBlock Name="TxtConfirmButton" Text="Confirm Button:" Foreground="#DDD" FontSize="16" Margin="10,130,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <RadioButton Name="RadioConfirmCross" Checked="RadioConfirmCross_Checked" IsChecked="False" Content="Cross (X)" Foreground="#DDD" FontSize="16" Margin="180,132,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                        <RadioButton Name="RadioConfirmCircle" Checked="RadioConfirmCircle_Checked" IsChecked="False" Content="Circle (O)" Foreground="#DDD" FontSize="16" Margin="280,132,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                    </Grid>
                 </Grid>
             </TabItem>
             <TabItem Header="Licensing">
