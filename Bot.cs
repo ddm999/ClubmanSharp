@@ -16,6 +16,7 @@ namespace ClubmanSharp
         private SimulatorInterfaceClient? _simInterface = null;
         private CancellationTokenSource? _simInterfaceCTS = null;
         private int _preRaceStuckCount = 0;
+        private int _raceResultStuckCount = 0;
 
         public SimulatorPacket? currentPacket = null;
         public TrackDataBase? currentTrackData = null;
@@ -393,6 +394,18 @@ namespace ClubmanSharp
             }
         }
 
+        public void RaceResultStuckDetection()
+        {
+            _raceResultStuckCount += 1;
+            if (_raceResultStuckCount >= 100)
+            {
+                DisconnectController();
+                connected = false;
+                error = true;
+                errorMsg = "Stuck in Race Result. Unable to figure out how to get out of this state.";
+            }
+        }
+
         public MenuState FindNewMenuState()
         {
             // no packet recieved or no race is loaded
@@ -423,6 +436,7 @@ namespace ClubmanSharp
             {
                 if (!currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
                     return MenuState.Replay;
+                RaceResultStuckDetection();
             }
             else if (currentMenuState == MenuState.Replay)
             {
@@ -602,6 +616,8 @@ namespace ClubmanSharp
                             _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
 
                             registeredResult = true;
+
+                            currentTrackData.NewRace();
                         }
 
                         _ds4.SetButtonState(DualShock4Button.Cross, true);
@@ -609,12 +625,11 @@ namespace ClubmanSharp
                         Thread.Sleep(50);
                         _ds4.SetButtonState(DualShock4Button.Cross, false);
                         _ds4.SubmitReport();
-
-                        currentTrackData.NewRace();
                     }
                     else if (currentMenuState == MenuState.Replay)
                     {
                         registeredResult = false;
+                        _raceResultStuckCount = 0;
 
                         Thread.Sleep(LongDelay);
 
