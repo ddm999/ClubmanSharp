@@ -22,7 +22,7 @@ namespace ClubmanSharp
         private readonly Settings settings = Settings.Default;
         private DateTime nextUpdate = DateTime.UtcNow;
 
-        public SemanticVersion currentVersion = new(1, 0, 0);
+        public SemanticVersion currentVersion = new(1, 1, 0);
 
         public MainWindow()
         {
