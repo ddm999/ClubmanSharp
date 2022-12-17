@@ -38,6 +38,7 @@ namespace ClubmanSharp
         public int completedRaces = 0;
         public int stuckDetectionRuns = 0;
 
+        public string buttonString = "";
 
         public TimeSpan fastestLap = new(0, 59, 59);
 
@@ -174,6 +175,7 @@ namespace ClubmanSharp
             Thread.Sleep(3000);
 
             bool ok = true;
+            bool _buttonmashToggler = false;
             while (ok)
             {
                 if (!connected)
@@ -199,7 +201,7 @@ namespace ClubmanSharp
                     var targetMph = targets.Item1;
                     var targetOrientation = targets.Item2;
 
-                    targetMph += 2; // needed bc of how the acceleration decrease scales
+                    buttonString = "";
 
                     // default all buttons off
                     // NOS
@@ -211,11 +213,35 @@ namespace ClubmanSharp
                     _ds4.SetButtonState(DualShock4Button.TriggerRight, false);
                     _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
 
+                    _ds4.SetButtonState(confirmButton, false);
+                    if (targetMph == -1 && targetOrientation == -1)
+                    {
+                        // we're in the pitbox. smash button.
+                        _buttonmashToggler = !_buttonmashToggler;
+                        if (_buttonmashToggler is true)
+                        {
+                            _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                            _ds4.SetButtonState(confirmButton, false);
+                            buttonString += "L";
+                        }
+                        else
+                        {
+                            _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                            _ds4.SetButtonState(confirmButton, true);
+                            buttonString += "X";
+                        }
+                        _ds4.SubmitReport();
+                        continue;
+                    }
+
+                    targetMph += 2; // needed bc of how the acceleration decrease scales
+
                     // FULL BRAKE
                     if (mph > targetMph * 1.2)
                     {
                         // brake
                         _ds4.SetButtonState(DualShock4Button.TriggerLeft, true);
+                        buttonString += "B";
                         _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 255);
                     }
                     // PARTIAL BRAKE
@@ -225,6 +251,7 @@ namespace ClubmanSharp
                         var diff = mph - targetMph;
                         var input = Convert.ToByte(255 - (255 / (targetMph * 0.2) * diff));
                         _ds4.SetButtonState(DualShock4Button.TriggerLeft, true);
+                        buttonString += "B";
                         _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, input);
                     }
                     // PARTIAL ACCEL
@@ -234,6 +261,7 @@ namespace ClubmanSharp
                         var diff = targetMph - mph;
                         var input = Convert.ToByte(255 / (targetMph * 0.1) * diff);
                         _ds4.SetButtonState(DualShock4Button.TriggerRight, true);
+                        buttonString += "A";
                         _ds4.SetSliderValue(DualShock4Slider.RightTrigger, input);
                     }
                     // FULL ACCEL
@@ -244,9 +272,11 @@ namespace ClubmanSharp
                         {
                             // use NOS
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, true);
+                            buttonString += "N";
                         }
                         // accel
                         _ds4.SetButtonState(DualShock4Button.TriggerRight, true);
+                        buttonString += "A";
 
                         if (currentPacket.LapCount <= 2) // first 2 laps, full throttle
                             _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 255);
@@ -269,6 +299,7 @@ namespace ClubmanSharp
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 255);
                             // override NOS to not be used
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
+                            buttonString += "!N";
                         }
                         // PARTIAL RIGHT
                         else if (-rotn < targetOrientation)
@@ -283,6 +314,7 @@ namespace ClubmanSharp
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 0);
                             // override NOS to not be used
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
+                            buttonString += "!N";
                         }
                         // PARTIAL LEFT
                         else if (-rotn > targetOrientation)
@@ -306,6 +338,7 @@ namespace ClubmanSharp
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 255);
                             // override NOS to not be used
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
+                            buttonString += "!N";
                         }
                         // PARTIAL RIGHT
                         else if (rotn < targetOrientation)
@@ -320,6 +353,7 @@ namespace ClubmanSharp
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 0);
                             // override NOS to not be used
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
+                            buttonString += "!N";
                         }
                         // PARTIAL LEFT
                         else if (rotn > targetOrientation)
@@ -367,6 +401,7 @@ namespace ClubmanSharp
             Stuck_PostRace,
             Stuck_PreRace,
             Stuck_Replay,
+            NoPacket,
 
             Unknown = -1,
         }
@@ -374,7 +409,7 @@ namespace ClubmanSharp
         public MenuState FindBaseMenuState(bool allowReplay=false)
         {
             if (currentPacket is null)
-                return MenuState.Unknown;
+                return MenuState.NoPacket;
             if (currentPacket.Flags.HasFlag(SimulatorFlags.Paused))
                 return MenuState.RacePaused;
             if (currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
@@ -472,6 +507,15 @@ namespace ClubmanSharp
                 errorMsg = "Couldn't determine game state. Open the pre-race menu before starting.";
                 return;
             }
+            else if (currentMenuState == MenuState.NoPacket)
+            {
+                connected = false;
+                error = true;
+                errorMsg = "No packet received.\nCheck your connection, allow ClubmanSharp access through any firewalls, verify the entered IP address for your console.\n\n" +
+                           "A restricted network such as a university campus may block the connection:\n" +
+                           "you can try using a mobile hotspot (be aware of your data usage) or internet connection sharing through your PC.";
+                return;
+            }
 
             try
             {
@@ -483,9 +527,12 @@ namespace ClubmanSharp
                     for (int i = 0; i < 5; i++)
                     {
                         _ds4.SetButtonState(cancelButton, true);
+                        buttonString = "O";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetButtonState(cancelButton, false);
+                        buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(ShortDelay);
                     }
@@ -493,33 +540,46 @@ namespace ClubmanSharp
                     for (int i = 0; i < 5; i++)
                     {
                         _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                        buttonString = "L";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                        buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(ShortDelay);
                     }
                     // then press down
                     _ds4.SetDPadDirection(DualShock4DPadDirection.South);
+                    buttonString = "D";
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
+
                     _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                    buttonString = "";
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
+
                     // and finally, click start race
                     _ds4.SetButtonState(confirmButton, true);
+                    buttonString = "X";
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
+
                     _ds4.SetButtonState(confirmButton, false);
+                    buttonString = "";
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
                 }
                 else if (currentMenuState == MenuState.Race)
                 {
                     _ds4.SetButtonState(DualShock4Button.Options, true);
+                    buttonString = "S";
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
+
                     _ds4.SetButtonState(DualShock4Button.Options, false);
+                    buttonString = "";
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
 
@@ -532,24 +592,34 @@ namespace ClubmanSharp
                     for (int i = 0; i < 5; i++)
                     {
                         _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                        buttonString = "L";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                        buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(ShortDelay);
                     }
                     // then go right once
                     _ds4.SetDPadDirection(DualShock4DPadDirection.East);
+                    buttonString = "R";
                     _ds4.SubmitReport();
+
                     Thread.Sleep(50);
                     _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                    buttonString = "";
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
+
                     // and click to restart race
                     _ds4.SetButtonState(confirmButton, true);
+                    buttonString = "X";
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
+
                     _ds4.SetButtonState(confirmButton, false);
+                    buttonString = "";
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
 
@@ -624,9 +694,12 @@ namespace ClubmanSharp
                         }
 
                         _ds4.SetButtonState(confirmButton, true);
+                        buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetButtonState(confirmButton, false);
+                        buttonString = "";
                         _ds4.SubmitReport();
                     }
                     else if (currentMenuState == MenuState.Replay)
@@ -639,9 +712,12 @@ namespace ClubmanSharp
                         for (int i = 0; i < 2; i++)
                         {
                             _ds4.SetButtonState(confirmButton, true);
+                            buttonString = "X";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
+
                             _ds4.SetButtonState(confirmButton, false);
+                            buttonString = "";
                             _ds4.SubmitReport();
                             Thread.Sleep(ShortDelay);
                         }
@@ -653,15 +729,22 @@ namespace ClubmanSharp
                         Thread.Sleep(LongDelay);
 
                         _ds4.SetDPadDirection(DualShock4DPadDirection.East);
+                        buttonString = "R";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                        buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(ShortDelay);
+
                         _ds4.SetButtonState(confirmButton, true);
+                        buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetButtonState(confirmButton, false);
+                        buttonString = "";
                         _ds4.SubmitReport();
 
                         _preRaceStuckCount = 0;
@@ -672,9 +755,12 @@ namespace ClubmanSharp
                         Thread.Sleep(LongDelay);
 
                         _ds4.SetButtonState(confirmButton, true);
+                        buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetButtonState(confirmButton, false);
+                        buttonString = "";
                         _ds4.SubmitReport();
 
                         Thread.Sleep(LongDelay);
@@ -688,9 +774,12 @@ namespace ClubmanSharp
                         for (int i = 0; i < 5; i++)
                         {
                             _ds4.SetButtonState(cancelButton, true);
+                            buttonString = "O";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
+
                             _ds4.SetButtonState(cancelButton, false);
+                            buttonString = "";
                             _ds4.SubmitReport();
                             Thread.Sleep(250);
                         }
@@ -698,24 +787,34 @@ namespace ClubmanSharp
                         for (int i = 0; i < 5; i++)
                         {
                             _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                            buttonString = "L";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
+
                             _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                            buttonString = "";
                             _ds4.SubmitReport();
                             Thread.Sleep(250);
                         }
                         // then press down
                         _ds4.SetDPadDirection(DualShock4DPadDirection.South);
+                        buttonString = "D";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                        buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(250);
+
                         // and finally, click start race
                         _ds4.SetButtonState(confirmButton, true);
+                        buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetButtonState(confirmButton, false);
+                        buttonString = "X";
                         _ds4.SubmitReport();
 
                         Thread.Sleep(5000);
@@ -733,17 +832,23 @@ namespace ClubmanSharp
                         for (int i = 0; i < 10; i++)
                         {
                             _ds4.SetDPadDirection(DualShock4DPadDirection.East);
+                            buttonString = "R";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
+
                             _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                            buttonString = "";
                             _ds4.SubmitReport();
                             Thread.Sleep(250);
                         }
                         // click exit
                         _ds4.SetButtonState(confirmButton, true);
+                        buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetButtonState(confirmButton, false);
+                        buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(250);
 
@@ -756,24 +861,34 @@ namespace ClubmanSharp
                         for (int i = 0; i < 5; i++)
                         {
                             _ds4.SetButtonState(cancelButton, true);
+                            buttonString = "O";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
+
                             _ds4.SetButtonState(cancelButton, false);
+                            buttonString = "";
                             _ds4.SubmitReport();
                             Thread.Sleep(250);
                         }
                         // then press left
                         _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                        buttonString = "L";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                        buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(250);
+
                         // and finally, click retry
                         _ds4.SetButtonState(confirmButton, true);
+                        buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetButtonState(confirmButton, false);
+                        buttonString = "";
                         _ds4.SubmitReport();
 
                         currentMenuState = MenuState.Stuck_PreRace;
@@ -783,9 +898,12 @@ namespace ClubmanSharp
                         Thread.Sleep(8000);
 
                         _ds4.SetButtonState(confirmButton, true);
+                        buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
+
                         _ds4.SetButtonState(confirmButton, false);
+                        buttonString = "";
                         _ds4.SubmitReport();
 
                         Thread.Sleep(5000);

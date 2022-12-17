@@ -70,5 +70,7 @@ namespace ClubmanSharp.TrackData
           new Segment( 200,  680,  300,  710, -171.0, 300.0), // T15 entry
           new Segment( 195,  710,  275,  850,  -95.0, 300.0), // T15
         };
+
+        public override Segment pitbox { get; } = new(118, 844, 119, 845, -1, -1);
     }
 }

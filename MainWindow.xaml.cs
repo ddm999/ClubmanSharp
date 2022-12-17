@@ -182,6 +182,40 @@ namespace ClubmanSharp
             TxtLap.Text = $"Fastest Lap: {bot.fastestLap.Minutes:d1}:{bot.fastestLap.Seconds:d2}.{bot.fastestLap.Milliseconds:d3}";
             TxtRaces.Text = $"Completed Races: {bot.completedRaces}";
             TxtCredits.Text = $"Estimated Credits: {bot.completedRaces * 105000 * 0.98:n0}";
+
+            if (tabControl.SelectedItem == debugTabItem)
+            {
+                TxtDebug.Text = "Bot information:\n";
+                TxtDebug.Text += $"error: {bot.error}    ";
+                TxtDebug.Text += $"connected: {bot.connected}    ";
+                TxtDebug.Text += $"stuckDetectRuns: {bot.stuckDetectionRuns}\n";
+                TxtDebug.Text += $"Controller: {bot.buttonString}\n";
+                if (bot.currentPacket != null)
+                {
+                    TxtDebug.Text += "\nPacket information:\n";
+                    TxtDebug.Text += $"DateReceived: {bot.currentPacket.DateReceived}\n";
+                    TxtDebug.Text += $"CarCode: {bot.currentPacket.CarCode}\n";
+                    TxtDebug.Text += $"NumCarsAtPreRace: {bot.currentPacket.NumCarsAtPreRace}\n";
+                    TxtDebug.Text += $"CurrentGear: {bot.currentPacket.CurrentGear}    ";
+                    TxtDebug.Text += $"EngineRPM: {bot.currentPacket.EngineRPM}    ";
+                    TxtDebug.Text += $"MetersPerSecond: {bot.currentPacket.MetersPerSecond}\n";
+                    TxtDebug.Text += $"LapCount: {bot.currentPacket.LapCount}    ";
+                    TxtDebug.Text += $"LapsInRace: {bot.currentPacket.LapsInRace}\n";
+                    TxtDebug.Text += $"BestLapTime: {bot.currentPacket.BestLapTime}    ";
+                    TxtDebug.Text += $"LastLapTime: {bot.currentPacket.LastLapTime}\n";
+                    TxtDebug.Text += $"RelativeOrientationToNorth: {bot.currentPacket.RelativeOrientationToNorth}\n";
+                    TxtDebug.Text += $"Position: {bot.currentPacket.Position}\n";
+                    TxtDebug.Text += $"Rotation: {bot.currentPacket.Rotation}\n";
+                    TxtDebug.Text += $"Velocity: {bot.currentPacket.Velocity}\n";
+                }
+                if (bot.currentTrackData != null)
+                {
+                    TxtDebug.Text += "\nTrack information:\n";
+                    TxtDebug.Text += $"useInitialSegments: {bot.currentTrackData.useInitialSegments}    ";
+                    TxtDebug.Text += $"segmentNum: {bot.currentTrackData.segmentNum}    ";
+                    TxtDebug.Text += $"pitboxCounter: {bot.currentTrackData.pitboxCounter}\n";
+                }
+            }
         }
 
         private void StartStop_Click(object sender, RoutedEventArgs e)
