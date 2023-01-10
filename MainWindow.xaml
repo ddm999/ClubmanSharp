@@ -81,6 +81,7 @@
                         <RadioButton Name="RadioConfirmCross" Checked="RadioConfirmCross_Checked" IsChecked="False" Content="Cross (X)" Foreground="#DDD" FontSize="16" Margin="180,132,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <RadioButton Name="RadioConfirmCircle" Checked="RadioConfirmCircle_Checked" IsChecked="False" Content="Circle (O)" Foreground="#DDD" FontSize="16" Margin="280,132,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                     </Grid>
+                    <Button Content="Load custom data file" Click="CustomDataFile_Click" Margin="10,220,0,0" Height="24" Width="150" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Licensing">

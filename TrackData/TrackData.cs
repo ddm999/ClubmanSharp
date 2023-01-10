@@ -34,6 +34,7 @@ namespace ClubmanSharp.TrackData
         public virtual Segment[] initialsegments { get; } = Array.Empty<Segment>();
         public virtual Segment[] segments { get; } = Array.Empty<Segment>();
         public virtual Segment pitbox { get; } = new();
+        public double nos_speedlimit = 150;
 
         public void NewRace()
         {

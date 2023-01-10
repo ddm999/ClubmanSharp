@@ -1,4 +1,5 @@
 ﻿using ClubmanSharp.TrackData;
+using Microsoft.Win32;
 using Nefarius.ViGEm.Client.Targets.DualShock4;
 using NuGet.Versioning;
 using System;
@@ -405,6 +406,28 @@ namespace ClubmanSharp
             RadioConfirmCross.IsChecked = false;
             settings.confirmButton = 1;
             settings.Save();
+        }
+
+        private void CustomDataFile_Click(object sender, RoutedEventArgs e)
+        {
+            if (bot is null)
+                return;
+
+            OpenFileDialog openFileDialog = new();
+            openFileDialog.Filter = "ClubmanSharp track data|*.td";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var td = TrackDataReader.ReadFromFile(openFileDialog.FileName);
+                    bot.currentTrackData = td;
+                    MessageBox.Show($"Loaded file with {td.segments.Length} segments and {td.initialsegments.Length} initial segments.", "Loaded data", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
         }
     }
 }

@@ -268,7 +268,7 @@ namespace ClubmanSharp
                     else
                     {
                         // NOS is only used below 150mph
-                        if (mph < 150)
+                        if (mph < currentTrackData.nos_speedlimit)
                         {
                             // use NOS
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, true);

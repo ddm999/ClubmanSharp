@@ -72,5 +72,7 @@ namespace ClubmanSharp.TrackData
         };
 
         public override Segment pitbox { get; } = new(118, 844, 119, 845, -1, -1);
+
+        public new double nos_speedlimit = 150;
     }
 }
