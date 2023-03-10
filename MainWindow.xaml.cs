@@ -1,4 +1,5 @@
 ﻿using ClubmanSharp.TrackData;
+using Microsoft.Win32;
 using Nefarius.ViGEm.Client.Targets.DualShock4;
 using NuGet.Versioning;
 using System;
@@ -8,6 +9,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Windows.Interop;
+using System.Threading.Tasks;
 
 namespace ClubmanSharp
 {
@@ -21,6 +27,7 @@ namespace ClubmanSharp
         private readonly Bot bot;
         private readonly Settings settings = Settings.Default;
         private DateTime nextUpdate = DateTime.UtcNow;
+        private string specialDebugTxt = "";
 
         public SemanticVersion currentVersion = new(1, 1, 0);
 
@@ -67,17 +74,19 @@ namespace ClubmanSharp
 
             CompositionTarget.Rendering += VisualLoop;
 
-            TxtDetails.Text = "Developed with tunes and tips provided by Photon-Phoenix\n\n" +
-                              "Using the GT7 SimInterface found & documented by Nenkai\n\n" +
-                              "Based on Clubman+ by igoticecream\n\n" +
-                              "Special thanks to the PSNProfiles GT7 and GT Modding Community discord servers\n\n";
+            TxtDetails.Text = "WARNING: The latest version of PS Remote Play does not currently work with virtual controllers!\n" +
+                              "If the bot has stopped working for you, *CLOSE REMOTE PLAY* and then\n" +
+                              "click the button below to download & install a patched older version of PS Remote Play, which will work.\n";
 
             TxtShortHelp.Text = "Turn on a password requirement for PlayStation purchases before using any script.\n" +
                                 "It is recommended to use HidHide to prevent the bot interacting with your desktop.\n\n" +
                                 "You must start Remote Play with no controller connected to your PC.\n\n" +
                                 "Enter your PS4/PS5's local IP address and hit Start while on the Tokyo Clubman+ pre-race menu.";
 
-            TxtLicensing.Text = "This project is licensed under the European Union Public License 1.2 (EUPL-1.2).\n" +
+            TxtLicensing.Text = "Developed with tunes and tips provided by Photon-Phoenix\n" +
+                                "Using the GT7 SimInterface found & documented by Nenkai\n" +
+                                "Special thanks to the PSNProfiles GT7 and GT Modding Community discord servers\n\n" +
+                                "This project is licensed under the European Union Public License 1.2 (EUPL-1.2).\n" +
                                 "This is a copyleft free/open-source software license. (This is not legal advice.)\n" +
                                 "Full terms can be found at:\n https://github.com/ddm999/ClubmanSharp/blob/main/LICENSE\n\n" +
                                 "This project uses https://github.com/Nenkai/PDTools, licensed under the MIT license.\n" +
@@ -215,6 +224,7 @@ namespace ClubmanSharp
                     TxtDebug.Text += $"segmentNum: {bot.currentTrackData.segmentNum}    ";
                     TxtDebug.Text += $"pitboxCounter: {bot.currentTrackData.pitboxCounter}\n";
                 }
+                TxtDebug.Text += specialDebugTxt;
             }
         }
 
@@ -405,6 +415,62 @@ namespace ClubmanSharp
             RadioConfirmCross.IsChecked = false;
             settings.confirmButton = 1;
             settings.Save();
+        }
+
+        /*
+         * The following function is from https://github.com/xeropresence/remoteplay-version-patcher
+        */
+        private static string? FindRemotePlay()
+        {
+            var baseKey = Environment.Is64BitOperatingSystem ?
+                @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\" :
+                @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\";
+
+            using (var keys = Registry.LocalMachine.OpenSubKey(baseKey))
+            {
+                var remotePlayKey = keys?.GetSubKeyNames()
+                    .Select(name => keys.OpenSubKey(name))
+                    .FirstOrDefault(key => key.GetValue("DisplayName", "").ToString().Contains("PS Remote Play") &&
+                                           key.GetValue("Publisher", "").ToString().Contains("Sony"));
+                var path = Path.Combine(remotePlayKey?.GetValue("InstallLocation", null)?.ToString() ?? string.Empty, "RemotePlay.exe");
+                return File.Exists(path) ? path : null;
+            }
+        }
+
+        public async Task DownloadPatchedRemotePlay(string path)
+        {
+            using var client = new HttpClient();
+            using var stream = await client.GetStreamAsync("http://gt-mod.site/RemotePlay-550-patched.exe");
+            using var fileStream = new FileStream(path, FileMode.Create);
+            stream.CopyTo(fileStream);
+        }
+
+        private async void BtnPatchedRemotePlay_Click(object sender, RoutedEventArgs e)
+        {
+            string? outpath = FindRemotePlay();
+            string dlpath = Path.Combine(Directory.GetCurrentDirectory(), "RemotePlay.exe");
+
+            await DownloadPatchedRemotePlay(dlpath);
+
+            if (File.Exists(dlpath) && File.Exists(outpath))
+            {
+                MessageBox.Show($"ClubmanSharp will now install the downloaded Remote Play version.\nTo do this you need to accept the 'Windows Command Processor' UAC prompt that will appear after this box.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                Process process = new();
+                ProcessStartInfo startInfo = new();
+                startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                startInfo.FileName = "cmd.exe";
+                startInfo.Arguments = $"/C move \"{dlpath}\" \"{outpath}\"";
+                startInfo.Verb = "runas";
+                startInfo.UseShellExecute = true;
+                process.StartInfo = startInfo;
+                process.Start();
+
+                MessageBox.Show($"This should have successfully installed patched Remote Play.\nLaunch Remote Play as normal and see if it works.\n\nIf it doesn't, try this process again, making sure that Remote Play is fully closed.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+            MessageBox.Show("Failed to find current Remote Play installation:\nthe patched RemotePlay.exe has been left next to ClubmanSharp.exe for manual installation.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
         }
     }
 }

@@ -31,6 +31,7 @@
                     <TextBlock Name="TxtSrcLink" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="16" Margin="10,300,0,0">
                         <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp" RequestNavigate="Hyperlink_Click">Source available at github.com/ddm999/ClubmanSharp</Hyperlink>
                     </TextBlock>
+                    <Button Name="BtnPatchedRemotePlay" FontFamily="Roboto" Background="#666" Foreground="#DDD" Click="BtnPatchedRemotePlay_Click" FontSize="16" Content="Install Patched Remote Play" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="10,0,0,65" HorizontalAlignment="Left" Width="240" Height="24" VerticalAlignment="Bottom"/>
                     <TextBlock Name="TxtUpdateLink" Visibility="Hidden" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="40" Width="460" FontSize="16" Margin="10,300,0,0">
                         <Hyperlink NavigateUri="https://github.com/ddm999/ClubmanSharp/releases" RequestNavigate="Hyperlink_Click">Update to latest at github.com/ddm999/ClubmanSharp/releases</Hyperlink>
                     </TextBlock>
@@ -85,7 +86,7 @@
             </TabItem>
             <TabItem Header="Licensing">
                 <Grid Background="#222">
-                    <TextBlock Name="TxtLicensing" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="280" Width="460" FontSize="12" Margin="10,10,0,0"/>
+                    <TextBlock Name="TxtLicensing" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="350" Width="460" FontSize="12" Margin="10,5,0,0"/>
                 </Grid>
             </TabItem>
             <TabItem Name="debugTabItem" Header="Debug">
