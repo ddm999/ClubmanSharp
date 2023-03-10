@@ -75,8 +75,8 @@ namespace ClubmanSharp
             CompositionTarget.Rendering += VisualLoop;
 
             TxtDetails.Text = "WARNING: The latest version of PS Remote Play does not currently work with virtual controllers!\n" +
-                              "If the bot has stopped working for you, *CLOSE REMOTE PLAY* and then\n" +
-                              "click the button below to download & install a patched older version of PS Remote Play, which will work.\n";
+                              "If you do not already use a patched version of PS Remote Play, *CLOSE REMOTE PLAY* and then click the button below " +
+                              "to download & install a patched older version which will work with the bot.\n";
 
             TxtShortHelp.Text = "Turn on a password requirement for PlayStation purchases before using any script.\n" +
                                 "It is recommended to use HidHide to prevent the bot interacting with your desktop.\n\n" +
