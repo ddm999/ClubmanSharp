@@ -29,7 +29,7 @@ namespace ClubmanSharp
         private DateTime nextUpdate = DateTime.UtcNow;
         private string specialDebugTxt = "";
 
-        public SemanticVersion currentVersion = new(1, 1, 0);
+        public SemanticVersion currentVersion = new(1, 1, 1);
 
         public MainWindow()
         {
