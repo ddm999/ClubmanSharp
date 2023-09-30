@@ -26,7 +26,7 @@ namespace ClubmanSharp
 
         public int ShortDelay = 250;
         public int LongDelay = 3000;
-        public byte LateRaceMaxThrottle = 255;
+        public byte LateRaceMaxThrottle = 240;
 
         public DualShock4Button confirmButton = DualShock4Button.Cross;
         public DualShock4Button cancelButton = DualShock4Button.Circle;
@@ -521,6 +521,16 @@ namespace ClubmanSharp
             {
                 if (currentMenuState == MenuState.PreRace)
                 {
+                    // check the right number of cars are in PreRace
+                    if (currentPacket.NumCarsAtPreRace != 5)
+                    {
+                        DisconnectController();
+                        connected = false;
+                        error = true;
+                        errorMsg = $"Incorrect number of cars in Pre-Race.\nPlease verify that you have selected the Tokyo Expressway Clubman Cup Plus event.\n\n(The Japanese Clubman Cup 550 is a different event!)";
+                        return;
+                    }
+
                     // ensure we're hovered over start race
 
                     // first, smash the hell out of the circle button
