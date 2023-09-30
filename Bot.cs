@@ -70,7 +70,7 @@ namespace ClubmanSharp
             catch (Exception ex)
             {
                 error = true;
-                errorMsg = $"Failed to start ViGEm client and emulated DualShock 4 controller.\nException details below:\n\n{ex.Message}";
+                errorMsg = $"Failed to start ViGEm client and emulated DualShock 4 controller.\nException details below:\n\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}";
                 return;
             }
 
@@ -552,6 +552,17 @@ namespace ClubmanSharp
                     // then press down
                     _ds4.SetDPadDirection(DualShock4DPadDirection.South);
                     buttonString = "D";
+                    _ds4.SubmitReport();
+                    Thread.Sleep(50);
+
+                    _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                    buttonString = "";
+                    _ds4.SubmitReport();
+                    Thread.Sleep(ShortDelay);
+
+                    // then press right to move to Start from Weather Radar
+                    _ds4.SetDPadDirection(DualShock4DPadDirection.East);
+                    buttonString = "R";
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
 
