@@ -75,12 +75,17 @@
                     <Grid>
                         <TextBlock Name="TxtThrottle" Text="Max Throttle (Laps 3-5)" Foreground="#DDD" FontSize="16" Margin="10,100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <TextBlock Name="TxtThrottleValue" Text="255" Foreground="#DDD" FontSize="16" Margin="430,100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                        <Slider Name="SliderThrottle" ValueChanged="SliderThrottle_ValueChanged"  Minimum="200" Maximum="255" Value="255" Width="240" Height="20" Margin="180,103,0,0"  HorizontalAlignment="Left" VerticalAlignment="Top" ToolTip="255/255"/>
+                        <Slider Name="SliderThrottle" ValueChanged="SliderThrottle_ValueChanged"  Minimum="200" Maximum="255" Value="240" Width="240" Height="20" Margin="180,103,0,0"  HorizontalAlignment="Left" VerticalAlignment="Top" ToolTip="255/255"/>
                     </Grid>
                     <Grid>
                         <TextBlock Name="TxtConfirmButton" Text="Confirm Button:" Foreground="#DDD" FontSize="16" Margin="10,130,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <RadioButton Name="RadioConfirmCross" Checked="RadioConfirmCross_Checked" IsChecked="False" Content="Cross (X)" Foreground="#DDD" FontSize="16" Margin="180,132,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <RadioButton Name="RadioConfirmCircle" Checked="RadioConfirmCircle_Checked" IsChecked="False" Content="Circle (O)" Foreground="#DDD" FontSize="16" Margin="280,132,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                    </Grid>
+                    <Grid>
+                        <TextBlock Name="TxtAutoRetry" Text="After packet drop failure:" Foreground="#DDD" FontSize="16" Margin="10,160,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                        <RadioButton Name="RadioAutoRetryOff" Checked="RadioAutoRetryOff_Checked" IsChecked="False" Content="Error" Foreground="#DDD" FontSize="16" Margin="205,162,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
+                        <RadioButton Name="RadioAutoRetryOn" Checked="RadioAutoRetryOn_Checked" IsChecked="False" Content="Retry" Foreground="#DDD" FontSize="16" Margin="280,162,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                     </Grid>
                 </Grid>
             </TabItem>

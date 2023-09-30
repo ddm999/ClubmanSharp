@@ -15,6 +15,7 @@ using System.Net;
 using System.Windows.Interop;
 using System.Threading.Tasks;
 using System.IO.Compression;
+using System.Threading;
 
 namespace ClubmanSharp
 {
@@ -29,6 +30,8 @@ namespace ClubmanSharp
         private readonly Settings settings = Settings.Default;
         private DateTime nextUpdate = DateTime.UtcNow;
         private string specialDebugTxt = "";
+        private bool autoRetry = false;
+        private uint autoRetryCount = 0;
 
         public SemanticVersion currentVersion = new(1, 1, 1);
 
@@ -64,9 +67,21 @@ namespace ClubmanSharp
             {
                 case 0:
                     RadioConfirmCross.IsChecked = true;
+                    autoRetry = false;
                     break;
                 case 1:
                     RadioConfirmCircle.IsChecked = true;
+                    autoRetry = true;
+                    break;
+            }
+
+            switch (settings.autoRetry)
+            {
+                case 0:
+                    RadioAutoRetryOff.IsChecked = true;
+                    break;
+                case 1:
+                    RadioAutoRetryOn.IsChecked = true;
                     break;
             }
 
@@ -146,7 +161,12 @@ namespace ClubmanSharp
         {
             if (bot.error is true)
             {
-                MessageBox.Show(bot.errorMsg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                bool retriableError = bot.errorMsg.Contains("packet") || bot.errorMsg.Contains("Unexpected error");
+                if (!(autoRetry && retriableError))
+                {
+                    MessageBox.Show(bot.errorMsg, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
                 bot.error = false;
                 bot.Stop();
                 isStarted = false;
@@ -154,6 +174,13 @@ namespace ClubmanSharp
                 BtnStartStop.Content = "Start";
                 TxtIP.IsEnabled = true;
                 BtnStartStop.IsEnabled = true;
+
+                if (autoRetry && retriableError)
+                {
+                    Thread.Sleep(3000);
+                    autoRetryCount++;
+                    StartStop_Click(null, null);
+                }
             }
 
             // don't update text constantly because it actually uses an unnecessary chunk of GPU lol
@@ -198,6 +225,7 @@ namespace ClubmanSharp
                 TxtDebug.Text = "Bot information:\n";
                 TxtDebug.Text += $"error: {bot.error}    ";
                 TxtDebug.Text += $"connected: {bot.connected}    ";
+                TxtDebug.Text += $"autoRetries: {autoRetryCount}    ";
                 TxtDebug.Text += $"stuckDetectRuns: {bot.stuckDetectionRuns}\n";
                 TxtDebug.Text += $"Controller: {bot.buttonString}\n";
                 if (bot.currentPacket != null)
@@ -415,6 +443,21 @@ namespace ClubmanSharp
 
             RadioConfirmCross.IsChecked = false;
             settings.confirmButton = 1;
+            settings.Save();
+        }
+        private void RadioAutoRetryOff_Checked(object sender, RoutedEventArgs e)
+        {
+            RadioAutoRetryOn.IsChecked = false;
+            autoRetry = false;
+            settings.autoRetry = 0;
+            settings.Save();
+        }
+
+        private void RadioAutoRetryOn_Checked(object sender, RoutedEventArgs e)
+        {
+            RadioAutoRetryOff.IsChecked = false;
+            autoRetry = true;
+            settings.autoRetry = 1;
             settings.Save();
         }
 
