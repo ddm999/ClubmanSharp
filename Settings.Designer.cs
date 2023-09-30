@@ -118,5 +118,17 @@ namespace ClubmanSharp {
                 this["autoRetry"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public byte debugLog {
+            get {
+                return ((byte)(this["debugLog"]));
+            }
+            set {
+                this["debugLog"] = value;
+            }
+        }
     }
 }

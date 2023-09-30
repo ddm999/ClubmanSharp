@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ClubmanSharp.TrackData
 {
@@ -37,11 +33,13 @@ namespace ClubmanSharp.TrackData
 
         public void NewRace()
         {
+            DebugLog.Log($"TrackData NewRace");
             useInitialSegments = true;
         }
 
         public(double, double) GetTargets(float x, float z, int lap)
         {
+            DebugLog.Log($"TrackData GetTargets(x={x}, z={z}, lap={lap})");
             var ix = (int)x;
             var iz = (int)z;
 
@@ -50,9 +48,11 @@ namespace ClubmanSharp.TrackData
             if (ix >= pitbox.minX && ix <= pitbox.maxX &&
                 iz >= pitbox.minZ && iz <= pitbox.maxZ)
             {
+                DebugLog.Log($"TrackData GetTargets in pitbox region!!");
                 pitboxCounter += 1;
                 if (pitboxCounter >= 25)
                 {
+                    DebugLog.Log($"TrackData GetTargets PITBOX COUNTER HIT!!");
                     segmentNum = -1;
                     return (-1.0, -1.0);
                 }
@@ -70,7 +70,7 @@ namespace ClubmanSharp.TrackData
                     if (ix >= segment.minX && ix <= segment.maxX &&
                     iz >= segment.minZ && iz <= segment.maxZ)
                     {
-                        //Trace.WriteLine($"seg: {segmentNum}");
+                        DebugLog.Log($"TrackData INITIAL segment={segmentNum}");
                         return (segment.mph, segment.heading);
                     }
                 }
@@ -79,7 +79,7 @@ namespace ClubmanSharp.TrackData
                 // we've left the initial segment area, so switch to regular segments
                 useInitialSegments = false;
 
-                //Trace.WriteLine("Left initial segments.");
+                DebugLog.Log($"TrackData Left initial segments");
             }
 
             foreach (Segment segment in segments)
@@ -88,11 +88,12 @@ namespace ClubmanSharp.TrackData
                 if (ix >= segment.minX && ix <= segment.maxX &&
                     iz >= segment.minZ && iz <= segment.maxZ)
                 {
-                    //Trace.WriteLine($"seg: {segmentNum}");
+                    DebugLog.Log($"TrackData segment={segmentNum}");
                     return (segment.mph, segment.heading);
                 }
             }
 
+            DebugLog.Log($"TrackData NO SEGMENT FOUND!!");
             return (30.0, 360.0);
         }
     }
