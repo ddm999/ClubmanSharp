@@ -14,6 +14,7 @@ using System.Linq;
 using System.Net;
 using System.Windows.Interop;
 using System.Threading.Tasks;
+using System.IO.Compression;
 
 namespace ClubmanSharp
 {
@@ -76,7 +77,7 @@ namespace ClubmanSharp
 
             TxtDetails.Text = "WARNING: The latest version of PS Remote Play does not currently work with virtual controllers!\n" +
                               "If you do not already use a patched version of PS Remote Play, *CLOSE REMOTE PLAY* and then click the button below " +
-                              "to download & install a patched older version which will work with the bot.\n";
+                              "to get a version which will work with the bot.\n";
 
             TxtShortHelp.Text = "Turn on a password requirement for PlayStation purchases before using any script.\n" +
                                 "It is recommended to use HidHide to prevent the bot interacting with your desktop.\n\n" +
@@ -432,44 +433,80 @@ namespace ClubmanSharp
                     .Select(name => keys.OpenSubKey(name))
                     .FirstOrDefault(key => key.GetValue("DisplayName", "").ToString().Contains("PS Remote Play") &&
                                            key.GetValue("Publisher", "").ToString().Contains("Sony"));
-                var path = Path.Combine(remotePlayKey?.GetValue("InstallLocation", null)?.ToString() ?? string.Empty, "RemotePlay.exe");
-                return File.Exists(path) ? path : null;
+                var path = remotePlayKey?.GetValue("InstallLocation", null)?.ToString() ?? string.Empty;
+                return Directory.Exists(path) ? path : null;
             }
         }
 
         public async Task DownloadPatchedRemotePlay(string path)
         {
             using var client = new HttpClient();
-            using var stream = await client.GetStreamAsync("http://gt-mod.site/RemotePlay-550-patched.exe");
+            using var stream = await client.GetStreamAsync("http://gt-mod.site/PS_Remote_Play_v550_patch.zip");
             using var fileStream = new FileStream(path, FileMode.Create);
             stream.CopyTo(fileStream);
+            fileStream.Close();
         }
 
         private async void BtnPatchedRemotePlay_Click(object sender, RoutedEventArgs e)
         {
             string? outpath = FindRemotePlay();
-            string dlpath = Path.Combine(Directory.GetCurrentDirectory(), "RemotePlay.exe");
+
+            string dlpath = Path.Combine(Directory.GetCurrentDirectory(), "PS_Remote_Play_v550_patch.zip");
+            string extractpath = Path.Combine(Directory.GetCurrentDirectory(), "PS_Remote_Play_v550_patch");
+
+            // delete if exists, fine if this fails
+            try { File.Delete(dlpath); } catch (Exception) {}
+            try { Directory.Delete(extractpath, true); } catch (Exception) {}
 
             await DownloadPatchedRemotePlay(dlpath);
+            ZipFile.ExtractToDirectory(dlpath, extractpath);
 
-            if (File.Exists(dlpath) && File.Exists(outpath))
+            if (
+                outpath != null &&
+                File.Exists(Path.Combine(extractpath, "RemotePlay.exe")) &&
+                File.Exists(Path.Combine(outpath, "RemotePlay.exe")) &&
+                File.Exists(Path.Combine(extractpath, "RpCtrlWrapper.dll")) &&
+                File.Exists(Path.Combine(outpath, "RpCtrlWrapper.dll"))
+            )
             {
-                MessageBox.Show($"ClubmanSharp will now install the downloaded Remote Play version.\nTo do this you need to accept the 'Windows Command Processor' UAC prompt that will appear after this box.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show($"ClubmanSharp will now install the patch for Remote Play.\nYou may need to accept a 'Windows Command Processor' UAC prompt that will appear after this box.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 Process process = new();
-                ProcessStartInfo startInfo = new();
-                startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                startInfo.FileName = "cmd.exe";
-                startInfo.Arguments = $"/C move \"{dlpath}\" \"{outpath}\"";
-                startInfo.Verb = "runas";
-                startInfo.UseShellExecute = true;
+                ProcessStartInfo startInfo = new()
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    FileName = "cmd.exe",
+                    Arguments = $"/C move \"{Path.Combine(extractpath, "RemotePlay.exe")}\" \"{outpath}\"",
+                    Verb = "runas",
+                    UseShellExecute = true
+                };
                 process.StartInfo = startInfo;
                 process.Start();
 
-                MessageBox.Show($"This should have successfully installed patched Remote Play.\nLaunch Remote Play as normal and see if it works.\n\nIf it doesn't, try this process again, making sure that Remote Play is fully closed.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                Process process2 = new();
+                ProcessStartInfo startInfo2 = new()
+                {
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    FileName = "cmd.exe",
+                    Arguments = $"/C move \"{Path.Combine(extractpath, "RpCtrlWrapper.dll")}\" \"{outpath}\"",
+                    Verb = "runas",
+                    UseShellExecute = true
+                };
+                process2.StartInfo = startInfo2;
+                process2.Start();
+
+                try
+                {
+                    File.Delete(dlpath);
+                    Directory.Delete(extractpath);
+                }
+                // ignore delete fails, it probably failed for a reason and might help the user if the files are left
+                catch (Exception) {}
+
+                MessageBox.Show($"This should have successfully patched Remote Play.\nLaunch Remote Play as normal and see if it works.\n\nIf it doesn't, try this process again, making sure that Remote Play is fully closed.\nIf you can't get it working, you can request help in the GitHub issues.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
-            MessageBox.Show("Failed to find current Remote Play installation:\nthe patched RemotePlay.exe has been left next to ClubmanSharp.exe for manual installation.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Failed to find current Remote Play installation:\nyou can manually patch using the downloaded files left next to ClubmanSharp.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
     }
