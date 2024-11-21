@@ -88,7 +88,11 @@
                         <RadioButton Name="RadioAutoRetryOn" Checked="RadioAutoRetryOn_Checked" IsChecked="False" Content="Retry" Foreground="#DDD" FontSize="16" Margin="280,162,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                     </Grid>
                     <Grid>
-                        <CheckBox Name="CheckDebugLog" Checked="CheckDebugLog_Checked" Unchecked="CheckDebugLog_Unchecked" Content="Use debug.log" Foreground="#DDD" FontSize="16" Margin="0,0,10,10" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+                        <TextBlock Name="TxtDebugLog" Text="Debug log settings (only use when requested):" Foreground="#DDD" FontSize="16" Margin="10,0,0,40" HorizontalAlignment="Left" Height="21" VerticalAlignment="Bottom"/>
+                        <CheckBox Name="CheckMain" Checked="CheckDebugMain_Checked" Unchecked="CheckDebugMain_Unchecked" Content="MainWindow / handlers" Foreground="#DDD" FontSize="16" Margin="10,0,0,10" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="190"/>
+                        <CheckBox Name="CheckMenu" Checked="CheckDebugMenu_Checked" Unchecked="CheckDebugMenu_Unchecked" Content="MenuBot" Foreground="#DDD" FontSize="16" Margin="205,0,0,10" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90"/>
+                        <CheckBox Name="CheckDriv" Checked="CheckDebugDriv_Checked" Unchecked="CheckDebugDriv_Unchecked" Content="DriverBot" Foreground="#DDD" FontSize="16" Margin="295,0,0,10" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90"/>
+                        <CheckBox Name="CheckTrck" Checked="CheckDebugTrck_Checked" Unchecked="CheckDebugTrck_Unchecked" Content="TrackData" Foreground="#DDD" FontSize="16" Margin="385,0,0,10" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90"/>
                     </Grid>
                 </Grid>
             </TabItem>

@@ -48,17 +48,17 @@ namespace ClubmanSharp
 
         public void Start(string ip)
         {
-            DebugLog.Log($"Starting BotStart");
+            DebugLog.Log($"Starting BotStart", LogType.Main);
             SimulatorInterfaceGameType type = SimulatorInterfaceGameType.GT7;
             try
             {
-                DebugLog.Log($"Initializing SimulatorInterfaceClient");
+                DebugLog.Log($"Initializing SimulatorInterfaceClient", LogType.Main);
                 _simInterface = new SimulatorInterfaceClient(ip, type);
                 _simInterface.OnReceive += SimInterface_OnReceive;
             }
             catch (Exception ex)
             {
-                DebugLog.Log($"BotError: SimulatorInterfaceClient init & OnReceive add failed.\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}");
+                DebugLog.Log($"BotError: SimulatorInterfaceClient init & OnReceive add failed.\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}", LogType.Main);
                 error = true;
                 errorMsg = $"Failed to start Simulator Interface client.\nException details below:\n\n{ex.Message}";
                 return;
@@ -66,33 +66,33 @@ namespace ClubmanSharp
 
             try
             {
-                DebugLog.Log($"Initializing ViGEmClient");
+                DebugLog.Log($"Initializing ViGEmClient", LogType.Main);
                 var client = new ViGEmClient();
-                DebugLog.Log($"CreateDualShock4Controller");
+                DebugLog.Log($"CreateDualShock4Controller", LogType.Main);
                 _ds4 = client.CreateDualShock4Controller();
-                DebugLog.Log($"ds4 Connect");
+                DebugLog.Log($"ds4 Connect", LogType.Main);
                 _ds4.Connect();
             }
             catch (Exception ex)
             {
-                DebugLog.Log($"BotError: ViGEmClient init & controller connect failed.\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}");
+                DebugLog.Log($"BotError: ViGEmClient init & controller connect failed.\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}", LogType.Main);
                 error = true;
                 errorMsg = $"Failed to start ViGEm client and emulated DualShock 4 controller.\nException details below:\n\n{ex.Message}";
                 return;
             }
 
-            DebugLog.Log($"Connected, running tasks");
+            DebugLog.Log($"Connected, running tasks", LogType.Main);
             connected = true;
             Task.Run(() => SimInterfaceClientRunner());
             Task.Run(() => PacketUpdateLoop());
             Task.Run(() => DriverLoop());
             Task.Run(() => MenuUserLoop());
-            DebugLog.Log($"Finished BotStart");
+            DebugLog.Log($"Finished BotStart", LogType.Main);
         }
 
         public void Stop()
         {
-            DebugLog.Log($"Starting BotStop");
+            DebugLog.Log($"Starting BotStop", LogType.Main);
             connected = false;
 
             if (_simInterfaceCTS != null)
@@ -100,7 +100,7 @@ namespace ClubmanSharp
 
             if (_simInterface != null && _simInterface.Started)
                 _simInterface.Dispose();
-            DebugLog.Log($"Finished BotStop");
+            DebugLog.Log($"Finished BotStop", LogType.Main);
         }
 
         private void SimInterface_OnReceive(SimulatorPacket packet)
@@ -110,26 +110,27 @@ namespace ClubmanSharp
 
         private void PacketUpdateLoop()
         {
-            DebugLog.Log($"Starting PacketUpdateLoop (nofin)");
+            DebugLog.Log($"Starting PacketUpdateLoop (nofin)", LogType.Main);
             var ok = true;
             while (ok)
             {
                 Thread.Sleep(1000);
                 if (!connected || currentPacket is null)
                 {
-                    DebugLog.Log($"PacketUpdateLoop: not connected or no packet");
+                    // log message disabled, too much spam
+                    //DebugLog.Log($"PacketUpdateLoop: not connected or no packet", LogType.Main);
                     continue;
                 }
 
                 if (currentPacket.BestLapTime.Milliseconds != -1 && fastestLap > currentPacket.BestLapTime)
                 {
-                    DebugLog.Log($"PacketUpdateLoop: setting new fastest lap = {fastestLap}");
+                    DebugLog.Log($"PacketUpdateLoop: setting new fastest lap = {fastestLap}", LogType.Main);
                     fastestLap = currentPacket.BestLapTime;
                 }
 
                 if (DateTimeOffset.Now - currentPacket.DateReceived > TimeOutSpan)
                 {
-                    DebugLog.Log($"PacketUpdateLoop: last packet was {currentPacket.DateReceived:s}, timeout");
+                    DebugLog.Log($"PacketUpdateLoop: last packet was {currentPacket.DateReceived:s}, timeout", LogType.Main);
                     DisconnectController();
                     connected = false;
                     error = true;
@@ -141,10 +142,10 @@ namespace ClubmanSharp
 
         private async void SimInterfaceClientRunner()
         {
-            DebugLog.Log($"Started SimInterfaceClientRunner");
+            DebugLog.Log($"Started SimInterfaceClientRunner", LogType.Main);
             if (_simInterface is null)
             {
-                DebugLog.Log($"SimInterfaceClientRunner: no sim interface!!");
+                DebugLog.Log($"SimInterfaceClientRunner: no sim interface!!", LogType.Main);
                 connected = false;
                 error = true;
                 errorMsg = "Internal object for Sim Interface Client Runner not initialized.\nFor developers: call 'Start()' first!";
@@ -153,7 +154,7 @@ namespace ClubmanSharp
 
             _simInterfaceCTS = new CancellationTokenSource();
 
-            DebugLog.Log($"Starting sim interface");
+            DebugLog.Log($"Starting sim interface", LogType.Main);
             var task = _simInterface.Start(_simInterfaceCTS.Token);
 
             try
@@ -164,7 +165,7 @@ namespace ClubmanSharp
             { }
             catch (Exception ex)
             {
-                DebugLog.Log($"Error: from sim interface\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}");
+                DebugLog.Log($"Error: from sim interface\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}", LogType.Main);
                 error = true;
                 errorMsg = $"Error during Simulator Interface client update.\nException details below:\n\n{ex.Message}";
             }
@@ -181,10 +182,10 @@ namespace ClubmanSharp
 
         private void DriverLoop()
         {
-            DebugLog.Log($"Starting DriverLoop (nofin)");
+            DebugLog.Log($"Starting DriverLoop (nofin)", LogType.Driv);
             if (_ds4 is null || currentTrackData is null)
             {
-                DebugLog.Log($"DriverLoop: no ds4 OR no currentTrackData!!");
+                DebugLog.Log($"DriverLoop: no ds4 OR no currentTrackData!!", LogType.Driv);
                 connected = false;
                 error = true;
                 errorMsg = "Internal object for Driver not initialized.\nFor developers: call 'Start()' first!";
@@ -200,14 +201,14 @@ namespace ClubmanSharp
             {
                 if (!connected)
                 {
-                    DebugLog.Log($"DriverLoop: not connected!!");
+                    DebugLog.Log($"DriverLoop: not connected!!", LogType.Driv);
                     DisconnectController();
                     return;
                 }
 
                 if (currentPacket is null || currentMenuState != MenuState.Race)
                 {
-                    DebugLog.Log($"DriverLoop: no packet OR not in race... zzz");
+                    DebugLog.Log($"DriverLoop: no packet OR not in race... zzz", LogType.Driv);
                     Thread.Sleep(1000);
                     continue;
                 }
@@ -218,12 +219,12 @@ namespace ClubmanSharp
                     // handle accel & brake for target speed
                     var mph = currentPacket.MetersPerSecond * 2.23694;
                     var rotn = (1 - currentPacket.RelativeOrientationToNorth) * 180;
-                    DebugLog.Log($"DriverLoop DRIVING: mph {mph} rotn {rotn}");
+                    DebugLog.Log($"DriverLoop DRIVING: mph {mph} rotn {rotn}", LogType.Driv);
 
                     var targets = currentTrackData.GetTargets(currentPacket.Position.X, currentPacket.Position.Z, currentPacket.LapCount);
                     var targetMph = targets.Item1;
                     var targetOrientation = targets.Item2;
-                    DebugLog.Log($"DriverLoop DRIVING: targetMph {targetMph} targetOrientation {targetOrientation}");
+                    DebugLog.Log($"DriverLoop DRIVING: targetMph {targetMph} targetOrientation {targetOrientation}", LogType.Driv);
 
                     buttonString = "";
 
@@ -244,14 +245,14 @@ namespace ClubmanSharp
                         _buttonmashToggler = !_buttonmashToggler;
                         if (_buttonmashToggler is true)
                         {
-                            DebugLog.Log($"DriverLoop DRIVING: PITBOX!! LEFT");
+                            DebugLog.Log($"DriverLoop DRIVING: PITBOX!! LEFT", LogType.Driv);
                             _ds4.SetDPadDirection(DualShock4DPadDirection.West);
                             _ds4.SetButtonState(confirmButton, false);
                             buttonString += "L";
                         }
                         else
                         {
-                            DebugLog.Log($"DriverLoop DRIVING: PITBOX!! CONFIRM");
+                            DebugLog.Log($"DriverLoop DRIVING: PITBOX!! CONFIRM", LogType.Driv);
                             _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                             _ds4.SetButtonState(confirmButton, true);
                             buttonString += "X";
@@ -265,7 +266,7 @@ namespace ClubmanSharp
                     // FULL BRAKE
                     if (mph > targetMph * 1.2)
                     {
-                        DebugLog.Log($"DriverLoop DRIVING: full brake");
+                        DebugLog.Log($"DriverLoop DRIVING: full brake", LogType.Driv);
                         // brake
                         _ds4.SetButtonState(DualShock4Button.TriggerLeft, true);
                         buttonString += "B";
@@ -277,7 +278,7 @@ namespace ClubmanSharp
                         // brake
                         var diff = mph - targetMph;
                         var input = Convert.ToByte(255 - (255 / (targetMph * 0.2) * diff));
-                        DebugLog.Log($"DriverLoop DRIVING: partial brake {input}");
+                        DebugLog.Log($"DriverLoop DRIVING: partial brake {input}", LogType.Driv);
                         _ds4.SetButtonState(DualShock4Button.TriggerLeft, true);
                         buttonString += "B";
                         _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, input);
@@ -288,7 +289,7 @@ namespace ClubmanSharp
                         // accel
                         var diff = targetMph - mph;
                         var input = Convert.ToByte(255 / (targetMph * 0.1) * diff);
-                        DebugLog.Log($"DriverLoop DRIVING: partial accel {input}");
+                        DebugLog.Log($"DriverLoop DRIVING: partial accel {input}", LogType.Driv);
                         _ds4.SetButtonState(DualShock4Button.TriggerRight, true);
                         buttonString += "A";
                         _ds4.SetSliderValue(DualShock4Slider.RightTrigger, input);
@@ -296,11 +297,11 @@ namespace ClubmanSharp
                     // FULL ACCEL
                     else
                     {
-                        DebugLog.Log($"DriverLoop DRIVING: full accel");
+                        DebugLog.Log($"DriverLoop DRIVING: full accel", LogType.Driv);
                         // NOS is only used below 150mph
                         if (mph < 150)
                         {
-                            DebugLog.Log($"DriverLoop DRIVING: & under 150mph, boosting!");
+                            DebugLog.Log($"DriverLoop DRIVING: & under 150mph, boosting!", LogType.Driv);
                             // use NOS
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, true);
                             buttonString += "N";
@@ -318,18 +319,18 @@ namespace ClubmanSharp
                     // turn towards target line
                     if (targetOrientation == 360.0)
                     {
-                        DebugLog.Log($"DriverLoop DRIVING: i'm lost!! no turning");
+                        DebugLog.Log($"DriverLoop DRIVING: i'm lost!! no turning", LogType.Driv);
                         // not in a block, just maintain course
                         _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 128);
                     }
                     else if (targetOrientation < 0.0)
                     {
-                        DebugLog.Log($"DriverLoop DRIVING: going west");
+                        DebugLog.Log($"DriverLoop DRIVING: going west", LogType.Driv);
                         // heading west
                         // FULL RIGHT
                         if (-rotn < targetOrientation - 5.0)
                         {
-                            DebugLog.Log($"DriverLoop DRIVING: full right (override no boost)");
+                            DebugLog.Log($"DriverLoop DRIVING: full right (override no boost)", LogType.Driv);
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 255);
                             // override NOS to not be used
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
@@ -340,13 +341,13 @@ namespace ClubmanSharp
                         {
                             var diff = rotn - (-targetOrientation);
                             var input = Convert.ToByte(128 + (127 / 5.0 * diff));
-                            DebugLog.Log($"DriverLoop DRIVING: partial right {input}");
+                            DebugLog.Log($"DriverLoop DRIVING: partial right {input}", LogType.Driv);
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, input);
                         }
                         // FULL LEFT
                         else if (-rotn > targetOrientation + 5.0)
                         {
-                            DebugLog.Log($"DriverLoop DRIVING: full left (override no boost)");
+                            DebugLog.Log($"DriverLoop DRIVING: full left (override no boost)", LogType.Driv);
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 0);
                             // override NOS to not be used
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
@@ -357,24 +358,24 @@ namespace ClubmanSharp
                         {
                             var diff = (-targetOrientation) - rotn;
                             var input = Convert.ToByte(128 - (127 / 5.0 * diff));
-                            DebugLog.Log($"DriverLoop DRIVING: partial left {input}");
+                            DebugLog.Log($"DriverLoop DRIVING: partial left {input}", LogType.Driv);
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 64);
                         }
                         // CENTERED
                         else
                         {
-                            DebugLog.Log($"DriverLoop DRIVING: no steering");
+                            DebugLog.Log($"DriverLoop DRIVING: no steering", LogType.Driv);
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 128);
                         }
                     }
                     else
                     {
-                        DebugLog.Log($"DriverLoop DRIVING: going east");
+                        DebugLog.Log($"DriverLoop DRIVING: going east", LogType.Driv);
                         // heading east
                         // FULL RIGHT
                         if (rotn < targetOrientation - 5.0)
                         {
-                            DebugLog.Log($"DriverLoop DRIVING: full right (override no boost)");
+                            DebugLog.Log($"DriverLoop DRIVING: full right (override no boost)", LogType.Driv);
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 255);
                             // override NOS to not be used
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
@@ -385,13 +386,13 @@ namespace ClubmanSharp
                         {
                             var diff = rotn - targetOrientation;
                             var input = Convert.ToByte(128 - (127 / 5.0 * diff));
-                            DebugLog.Log($"DriverLoop DRIVING: partial right {input}");
+                            DebugLog.Log($"DriverLoop DRIVING: partial right {input}", LogType.Driv);
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, input);
                         }
                         // FULL LEFT
                         else if (rotn > targetOrientation + 5.0)
                         {
-                            DebugLog.Log($"DriverLoop DRIVING: full left (override no boost)");
+                            DebugLog.Log($"DriverLoop DRIVING: full left (override no boost)", LogType.Driv);
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 0);
                             // override NOS to not be used
                             _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
@@ -402,13 +403,13 @@ namespace ClubmanSharp
                         {
                             var diff = targetOrientation - rotn;
                             var input = Convert.ToByte(128 + (127 / 5.0 * diff));
-                            DebugLog.Log($"DriverLoop DRIVING: partial left {input}");
+                            DebugLog.Log($"DriverLoop DRIVING: partial left {input}", LogType.Driv);
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, input);
                         }
                         // CENTERED
                         else
                         {
-                            DebugLog.Log($"DriverLoop DRIVING: no steering");
+                            DebugLog.Log($"DriverLoop DRIVING: no steering", LogType.Driv);
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 128);
                         }
                     }
@@ -425,7 +426,7 @@ namespace ClubmanSharp
                     DisconnectController();
                     connected = false;
                     error = true;
-                    DebugLog.Log($"BotError: DriverLoop DRIVING failed\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}");
+                    DebugLog.Log($"BotError: DriverLoop DRIVING failed\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}", LogType.Driv);
                     errorMsg = $"Unexpected error sending driver inputs to ViGEm.\nException details below:\n\n{ex.Message}";
                     return;
                 }
@@ -468,11 +469,11 @@ namespace ClubmanSharp
 
         public void PreRaceStuckDetection()
         {
-            DebugLog.Log($"Incremented preRaceStuckCount");
+            DebugLog.Log($"Incremented preRaceStuckCount", LogType.Menu);
             _preRaceStuckCount += 1;
             if (_preRaceStuckCount >= 5)
             {
-                DebugLog.Log($"PreRaceStuckDetection STUCK!!");
+                DebugLog.Log($"PreRaceStuckDetection STUCK!!", LogType.Menu);
                 currentMenuState = MenuState.Stuck_PreOrPostRace;
                 _preRaceStuckCount = 0;
                 stuckDetectionRuns += 1;
@@ -481,11 +482,11 @@ namespace ClubmanSharp
 
         public void RaceResultStuckDetection()
         {
-            DebugLog.Log($"Incremented raceResultStuckCount");
+            DebugLog.Log($"Incremented raceResultStuckCount", LogType.Menu);
             _raceResultStuckCount += 1;
             if (_raceResultStuckCount >= 100)
             {
-                DebugLog.Log($"RaceResultStuckDetection STUCK!!");
+                DebugLog.Log($"RaceResultStuckDetection STUCK!!", LogType.Menu);
                 DisconnectController();
                 connected = false;
                 error = true;
@@ -495,65 +496,65 @@ namespace ClubmanSharp
 
         public MenuState FindNewMenuState()
         {
-            DebugLog.Log($"Started FindNewMenuState (nofin)");
+            DebugLog.Log($"Started FindNewMenuState (nofin)", LogType.Menu);
             // no packet recieved or no race is loaded
             if (currentPacket is null || currentPacket.LapCount == -1)
             {
-                DebugLog.Log($"FindNewMenuState: packet is null or lap is -1. State is Unknown.");
+                DebugLog.Log($"FindNewMenuState: packet is null or lap is -1. State is Unknown.", LogType.Menu);
                 return MenuState.Unknown;
             }
 
             if (currentMenuState == MenuState.PreRace)
             {
-                DebugLog.Log($"FindNewMenuState: state WAS PreRace.");
+                DebugLog.Log($"FindNewMenuState: state WAS PreRace.", LogType.Menu);
                 if (currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
                 {
-                    DebugLog.Log($"FindNewMenuState: car on track! State is Race.");
+                    DebugLog.Log($"FindNewMenuState: car on track! State is Race.", LogType.Menu);
                     return MenuState.Race;
                 }
                 PreRaceStuckDetection();
             }
             else if (currentMenuState == MenuState.Race)
             {
-                DebugLog.Log($"FindNewMenuState: state WAS Race.");
+                DebugLog.Log($"FindNewMenuState: state WAS Race.", LogType.Menu);
                 if (currentPacket.Flags.HasFlag(SimulatorFlags.Paused))
                 {
-                    DebugLog.Log($"FindNewMenuState: paused! State is RacePaused.");
+                    DebugLog.Log($"FindNewMenuState: paused! State is RacePaused.", LogType.Menu);
                     return MenuState.RacePaused;
                 }
                 if (currentPacket.LapCount > 5)
                 {
-                    DebugLog.Log($"FindNewMenuState: lap > 5! State is RaceResult.");
+                    DebugLog.Log($"FindNewMenuState: lap > 5! State is RaceResult.", LogType.Menu);
                     return MenuState.RaceResult;
                 }
             }
             else if (currentMenuState == MenuState.RacePaused)
             {
-                DebugLog.Log($"FindNewMenuState: state WAS RacePaused.");
+                DebugLog.Log($"FindNewMenuState: state WAS RacePaused.", LogType.Menu);
                 // have to just assume Exit is never clicked
                 //  because it can bring up a mini-rewards screen with no way to tell
                 if (!currentPacket.Flags.HasFlag(SimulatorFlags.Paused))
                 {
-                    DebugLog.Log($"FindNewMenuState: not paused! State is Race.");
+                    DebugLog.Log($"FindNewMenuState: not paused! State is Race.", LogType.Menu);
                     return MenuState.Race;
                 }
             }
             else if (currentMenuState == MenuState.RaceResult)
             {
-                DebugLog.Log($"FindNewMenuState: state WAS RaceResult.");
+                DebugLog.Log($"FindNewMenuState: state WAS RaceResult.", LogType.Menu);
                 if (!currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
                 {
-                    DebugLog.Log($"FindNewMenuState: car on track! State is Replay.");
+                    DebugLog.Log($"FindNewMenuState: car on track! State is Replay.", LogType.Menu);
                     return MenuState.Replay;
                 }
                 RaceResultStuckDetection();
             }
             else if (currentMenuState == MenuState.Replay)
             {
-                DebugLog.Log($"FindNewMenuState: state WAS Replay.");
+                DebugLog.Log($"FindNewMenuState: state WAS Replay.", LogType.Menu);
                 if (currentPacket.NumCarsAtPreRace > 0)
                 {
-                    DebugLog.Log($"FindNewMenuState: prerace cars set! State is PostRace.");
+                    DebugLog.Log($"FindNewMenuState: prerace cars set! State is PostRace.", LogType.Menu);
                     return MenuState.PostRace;
                 }
             }
@@ -567,13 +568,13 @@ namespace ClubmanSharp
             // first, smash the hell out of the circle button
             for (int i = 0; i < 5; i++)
             {
-                DebugLog.Log($"PreRaceInputRunner: cancel to exit [ON]");
+                DebugLog.Log($"PreRaceInputRunner: cancel to exit [ON]", LogType.Menu);
                 _ds4.SetButtonState(cancelButton, true);
                 buttonString = "O";
                 _ds4.SubmitReport();
                 Thread.Sleep(50);
 
-                DebugLog.Log($"PreRaceInputRunner: cancel to exit [OFF]");
+                DebugLog.Log($"PreRaceInputRunner: cancel to exit [OFF]", LogType.Menu);
                 _ds4.SetButtonState(cancelButton, false);
                 buttonString = "";
                 _ds4.SubmitReport();
@@ -582,52 +583,52 @@ namespace ClubmanSharp
             // then smash the hell out of left dpad
             for (int i = 0; i < 5; i++)
             {
-                DebugLog.Log($"PreRaceInputRunner: left to weather [ON]");
+                DebugLog.Log($"PreRaceInputRunner: left to weather [ON]", LogType.Menu);
                 _ds4.SetDPadDirection(DualShock4DPadDirection.West);
                 buttonString = "L";
                 _ds4.SubmitReport();
                 Thread.Sleep(50);
 
-                DebugLog.Log($"PreRaceInputRunner: left to weather [OFF]");
+                DebugLog.Log($"PreRaceInputRunner: left to weather [OFF]", LogType.Menu);
                 _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                 buttonString = "";
                 _ds4.SubmitReport();
                 Thread.Sleep(ShortDelay);
             }
             // then press down
-            DebugLog.Log($"PreRaceInputRunner: down to be safe? [ON]");
+            DebugLog.Log($"PreRaceInputRunner: down to be safe? [ON]", LogType.Menu);
             _ds4.SetDPadDirection(DualShock4DPadDirection.South);
             buttonString = "D";
             _ds4.SubmitReport();
             Thread.Sleep(50);
 
-            DebugLog.Log($"PreRaceInputRunner: down to be safe? [OFF]");
+            DebugLog.Log($"PreRaceInputRunner: down to be safe? [OFF]", LogType.Menu);
             _ds4.SetDPadDirection(DualShock4DPadDirection.None);
             buttonString = "";
             _ds4.SubmitReport();
             Thread.Sleep(ShortDelay);
 
             // then press right to move to Start from Weather Radar
-            DebugLog.Log($"PreRaceInputRunner: right to start [ON]");
+            DebugLog.Log($"PreRaceInputRunner: right to start [ON]", LogType.Menu);
             _ds4.SetDPadDirection(DualShock4DPadDirection.East);
             buttonString = "R";
             _ds4.SubmitReport();
             Thread.Sleep(50);
 
-            DebugLog.Log($"PreRaceInputRunner: right to start [OFF]");
+            DebugLog.Log($"PreRaceInputRunner: right to start [OFF]", LogType.Menu);
             _ds4.SetDPadDirection(DualShock4DPadDirection.None);
             buttonString = "";
             _ds4.SubmitReport();
             Thread.Sleep(ShortDelay);
 
             // and finally, click start race
-            DebugLog.Log($"PreRaceInputRunner: click start [ON]");
+            DebugLog.Log($"PreRaceInputRunner: click start [ON]", LogType.Menu);
             _ds4.SetButtonState(confirmButton, true);
             buttonString = "X";
             _ds4.SubmitReport();
             Thread.Sleep(50);
 
-            DebugLog.Log($"PreRaceInputRunner: click start [OFF]");
+            DebugLog.Log($"PreRaceInputRunner: click start [OFF]", LogType.Menu);
             _ds4.SetButtonState(confirmButton, false);
             buttonString = "";
             _ds4.SubmitReport();
@@ -636,10 +637,10 @@ namespace ClubmanSharp
 
         private void MenuUserLoop()
         {
-            DebugLog.Log($"Starting MenuUserLoop (nofin)");
+            DebugLog.Log($"Starting MenuUserLoop (nofin)", LogType.Menu);
             if (_ds4 is null)
             {
-                DebugLog.Log($"MenuUserLoop: no ds4!!");
+                DebugLog.Log($"MenuUserLoop: no ds4!!", LogType.Menu);
                 connected = false;
                 error = true;
                 errorMsg = "Internal object for MenuUser not initialized.\nFor developers: call 'Start()' first!";
@@ -649,11 +650,11 @@ namespace ClubmanSharp
             Thread.Sleep(1000);
 
             currentMenuState = FindBaseMenuState();
-            DebugLog.Log($"MenuUserLoop: base menu state is {currentMenuState}");
+            DebugLog.Log($"MenuUserLoop: base menu state is {currentMenuState}", LogType.Menu);
 
             if (currentMenuState == MenuState.Unknown)
             {
-                DebugLog.Log($"BotError: can't start if menu state is Unknown");
+                DebugLog.Log($"BotError: can't start if menu state is Unknown", LogType.Menu);
                 connected = false;
                 error = true;
                 errorMsg = "Couldn't determine game state. Open the pre-race menu before starting.";
@@ -661,7 +662,7 @@ namespace ClubmanSharp
             }
             else if (currentMenuState == MenuState.NoPacket)
             {
-                DebugLog.Log($"BotError: can't start if menu state is NoPacket");
+                DebugLog.Log($"BotError: can't start if menu state is NoPacket", LogType.Menu);
                 connected = false;
                 error = true;
                 errorMsg = "No packet received.\nCheck your connection, allow ClubmanSharp access through any firewalls, verify the entered IP address for your console.\n\n" +
@@ -677,7 +678,7 @@ namespace ClubmanSharp
                     // check the right number of cars are in PreRace
                     if (currentPacket.NumCarsAtPreRace != 5)
                     {
-                        DebugLog.Log($"BotError: incorrect prerace cars - was {currentPacket.NumCarsAtPreRace}");
+                        DebugLog.Log($"BotError: incorrect prerace cars - was {currentPacket.NumCarsAtPreRace}", LogType.Menu);
                         DisconnectController();
                         connected = false;
                         error = true;
@@ -689,19 +690,19 @@ namespace ClubmanSharp
                 }
                 else if (currentMenuState == MenuState.Race)
                 {
-                    DebugLog.Log($"InitialMenuUser Race: pause [ON]");
+                    DebugLog.Log($"InitialMenuUser Race: pause [ON]", LogType.Menu);
                     _ds4.SetButtonState(DualShock4Button.Options, true);
                     buttonString = "S";
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
 
-                    DebugLog.Log($"InitialMenuUser Race: pause [OFF]");
+                    DebugLog.Log($"InitialMenuUser Race: pause [OFF]", LogType.Menu);
                     _ds4.SetButtonState(DualShock4Button.Options, false);
                     buttonString = "";
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
 
-                    DebugLog.Log($"InitialMenuUser Race: set state to RacePaused");
+                    DebugLog.Log($"InitialMenuUser Race: set state to RacePaused", LogType.Menu);
                     currentMenuState = MenuState.RacePaused;
                 }
 
@@ -710,39 +711,39 @@ namespace ClubmanSharp
                     // smash the hell out of left dpad
                     for (int i = 0; i < 5; i++)
                     {
-                        DebugLog.Log($"InitialMenuUser RacePaused: left to resume [ON]");
+                        DebugLog.Log($"InitialMenuUser RacePaused: left to resume [ON]", LogType.Menu);
                         _ds4.SetDPadDirection(DualShock4DPadDirection.West);
                         buttonString = "L";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
 
-                        DebugLog.Log($"InitialMenuUser RacePaused: left to resume [OFF]");
+                        DebugLog.Log($"InitialMenuUser RacePaused: left to resume [OFF]", LogType.Menu);
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                         buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(ShortDelay);
                     }
                     // then go right once
-                    DebugLog.Log($"InitialMenuUser RacePaused: right to retry [ON]");
+                    DebugLog.Log($"InitialMenuUser RacePaused: right to retry [ON]", LogType.Menu);
                     _ds4.SetDPadDirection(DualShock4DPadDirection.East);
                     buttonString = "R";
                     _ds4.SubmitReport();
 
                     Thread.Sleep(50);
-                    DebugLog.Log($"InitialMenuUser RacePaused: right to retry [OFF]");
+                    DebugLog.Log($"InitialMenuUser RacePaused: right to retry [OFF]", LogType.Menu);
                     _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                     buttonString = "";
                     _ds4.SubmitReport();
                     Thread.Sleep(ShortDelay);
 
                     // and click to restart race
-                    DebugLog.Log($"InitialMenuUser RacePaused: click retry [ON]");
+                    DebugLog.Log($"InitialMenuUser RacePaused: click retry [ON]", LogType.Menu);
                     _ds4.SetButtonState(confirmButton, true);
                     buttonString = "X";
                     _ds4.SubmitReport();
                     Thread.Sleep(50);
 
-                    DebugLog.Log($"InitialMenuUser RacePaused: click retry [OFF]");
+                    DebugLog.Log($"InitialMenuUser RacePaused: click retry [OFF]", LogType.Menu);
                     _ds4.SetButtonState(confirmButton, false);
                     buttonString = "";
                     _ds4.SubmitReport();
@@ -762,7 +763,7 @@ namespace ClubmanSharp
                     DisconnectController();
                     connected = false;
                     error = true;
-                    DebugLog.Log($"BotError: InitialMenuUser failed\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}");
+                    DebugLog.Log($"BotError: InitialMenuUser failed\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}", LogType.Menu);
                     errorMsg = $"Unexpected error sending initial menu inputs to ViGEm.\nException details below:\n\n{ex.Message}";
                     return;
                 }
@@ -776,14 +777,14 @@ namespace ClubmanSharp
             {
                 if (!connected)
                 {
-                    DebugLog.Log($"MenuUser: not connected");
+                    DebugLog.Log($"MenuUser: not connected", LogType.Menu);
                     DisconnectController();
                     return;
                 }
 
                 if (currentMenuState == MenuState.Unknown)
                 {
-                    DebugLog.Log($"MenuUser: unknown state");
+                    DebugLog.Log($"MenuUser: unknown state", LogType.Menu);
                     Thread.Sleep(1000);
                     currentMenuState = FindBaseMenuState();
                     continue;
@@ -795,7 +796,7 @@ namespace ClubmanSharp
                 {
                     if (currentMenuState == MenuState.Unknown)
                     {
-                        DebugLog.Log($"BotError: MenuUser: changed to unknown state");
+                        DebugLog.Log($"BotError: MenuUser: changed to unknown state", LogType.Menu);
                         DisconnectController();
                         connected = false;
                         error = true;
@@ -808,7 +809,7 @@ namespace ClubmanSharp
 
                         if (!registeredResult)
                         {
-                            DebugLog.Log($"MenuUser RaceResult: registering new result");
+                            DebugLog.Log($"MenuUser RaceResult: registering new result", LogType.Menu);
                             completedRaces += 1;
 
                             _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 128);
@@ -823,13 +824,13 @@ namespace ClubmanSharp
                             currentTrackData.NewRace();
                         }
 
-                        DebugLog.Log($"MenuUser RaceResult: click continue [ON]");
+                        DebugLog.Log($"MenuUser RaceResult: click continue [ON]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, true);
                         buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser RaceResult: click continue [OFF]");
+                        DebugLog.Log($"MenuUser RaceResult: click continue [OFF]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, false);
                         buttonString = "";
                         _ds4.SubmitReport();
@@ -843,13 +844,13 @@ namespace ClubmanSharp
 
                         for (int i = 0; i < 2; i++)
                         {
-                            DebugLog.Log($"MenuUser Replay: click show hud / exit [ON]");
+                            DebugLog.Log($"MenuUser Replay: click show hud / exit [ON]", LogType.Menu);
                             _ds4.SetButtonState(confirmButton, true);
                             buttonString = "X";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
 
-                            DebugLog.Log($"MenuUser Replay: click show hud / exit [OFF]");
+                            DebugLog.Log($"MenuUser Replay: click show hud / exit [OFF]", LogType.Menu);
                             _ds4.SetButtonState(confirmButton, false);
                             buttonString = "";
                             _ds4.SubmitReport();
@@ -862,44 +863,44 @@ namespace ClubmanSharp
                     {
                         Thread.Sleep(LongDelay);
 
-                        DebugLog.Log($"MenuUser PostRace: right to retry [ON]");
+                        DebugLog.Log($"MenuUser PostRace: right to retry [ON]", LogType.Menu);
                         _ds4.SetDPadDirection(DualShock4DPadDirection.East);
                         buttonString = "R";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser PostRace: right to retry [OFF]");
+                        DebugLog.Log($"MenuUser PostRace: right to retry [OFF]", LogType.Menu);
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                         buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(ShortDelay);
 
-                        DebugLog.Log($"MenuUser PostRace: click retry [ON]");
+                        DebugLog.Log($"MenuUser PostRace: click retry [ON]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, true);
                         buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser PostRace: click retry [OFF]");
+                        DebugLog.Log($"MenuUser PostRace: click retry [OFF]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, false);
                         buttonString = "";
                         _ds4.SubmitReport();
 
                         _preRaceStuckCount = 0;
-                        DebugLog.Log($"MenuUser PostRace: set state to PreRace");
+                        DebugLog.Log($"MenuUser PostRace: set state to PreRace", LogType.Menu);
                         currentMenuState = MenuState.PreRace;
                     }
                     else if (currentMenuState == MenuState.PreRace)
                     {
                         Thread.Sleep(LongDelay);
 
-                        DebugLog.Log($"MenuUser PreRace: click start [ON]");
+                        DebugLog.Log($"MenuUser PreRace: click start [ON]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, true);
                         buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser PreRace: click start [OFF]");
+                        DebugLog.Log($"MenuUser PreRace: click start [OFF]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, false);
                         buttonString = "";
                         _ds4.SubmitReport();
@@ -908,7 +909,7 @@ namespace ClubmanSharp
                     }
                     else if (currentMenuState == MenuState.Stuck_PreOrPostRace)
                     {
-                        DebugLog.Log($"MenuUser Stuck_PreOrPostRace: attempting recovery");
+                        DebugLog.Log($"MenuUser Stuck_PreOrPostRace: attempting recovery", LogType.Menu);
                         Thread.Sleep(3000);
 
                         PreRaceInputRunner();
@@ -919,108 +920,108 @@ namespace ClubmanSharp
                         currentMenuState = FindBaseMenuState(true);
                         if (currentMenuState == MenuState.PreRace)
                         {
-                            DebugLog.Log($"MenuUser Stuck_PreOrPostRace: set state to Stuck_PostRace");
+                            DebugLog.Log($"MenuUser Stuck_PreOrPostRace: set state to Stuck_PostRace", LogType.Menu);
                             currentMenuState = MenuState.Stuck_PostRace;
                         }
                         if (currentMenuState == MenuState.Replay)
                         {
-                            DebugLog.Log($"MenuUser Stuck_PreOrPostRace: set state to Stuck_Replay");
+                            DebugLog.Log($"MenuUser Stuck_PreOrPostRace: set state to Stuck_Replay", LogType.Menu);
                             currentMenuState = MenuState.Stuck_Replay;
                         }
                     }
                     else if (currentMenuState == MenuState.Stuck_Replay)
                     {
-                        DebugLog.Log($"MenuUser Stuck_Replay: attempting recovery");
+                        DebugLog.Log($"MenuUser Stuck_Replay: attempting recovery", LogType.Menu);
                         // get to the exit button
                         for (int i = 0; i < 10; i++)
                         {
-                            DebugLog.Log($"MenuUser Stuck_Replay: right to exit [ON]");
+                            DebugLog.Log($"MenuUser Stuck_Replay: right to exit [ON]", LogType.Menu);
                             _ds4.SetDPadDirection(DualShock4DPadDirection.East);
                             buttonString = "R";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
 
-                            DebugLog.Log($"MenuUser Stuck_Replay: right to exit [OFF]");
+                            DebugLog.Log($"MenuUser Stuck_Replay: right to exit [OFF]", LogType.Menu);
                             _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                             buttonString = "";
                             _ds4.SubmitReport();
                             Thread.Sleep(250);
                         }
                         // click exit
-                        DebugLog.Log($"MenuUser Stuck_Replay: click exit [ON]");
+                        DebugLog.Log($"MenuUser Stuck_Replay: click exit [ON]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, true);
                         buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser Stuck_Replay: click exit [OFF]");
+                        DebugLog.Log($"MenuUser Stuck_Replay: click exit [OFF]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, false);
                         buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(250);
 
                         Thread.Sleep(3000);
-                        DebugLog.Log($"MenuUser Stuck_Replay: set state to PostRace");
+                        DebugLog.Log($"MenuUser Stuck_Replay: set state to PostRace", LogType.Menu);
                         currentMenuState = MenuState.PostRace;
                     }
                     else if (currentMenuState == MenuState.Stuck_PostRace)
                     {
-                        DebugLog.Log($"MenuUser Stuck_PostRace: attempting recovery");
+                        DebugLog.Log($"MenuUser Stuck_PostRace: attempting recovery", LogType.Menu);
                         // first, smash the hell out of the circle button
                         for (int i = 0; i < 5; i++)
                         {
-                            DebugLog.Log($"MenuUser Stuck_PostRace: cancel to exit [ON]");
+                            DebugLog.Log($"MenuUser Stuck_PostRace: cancel to exit [ON]", LogType.Menu);
                             _ds4.SetButtonState(cancelButton, true);
                             buttonString = "O";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
 
-                            DebugLog.Log($"MenuUser Stuck_PostRace: cancel to exit [OFF]");
+                            DebugLog.Log($"MenuUser Stuck_PostRace: cancel to exit [OFF]", LogType.Menu);
                             _ds4.SetButtonState(cancelButton, false);
                             buttonString = "";
                             _ds4.SubmitReport();
                             Thread.Sleep(250);
                         }
                         // then press left
-                        DebugLog.Log($"MenuUser Stuck_PostRace: left to retry [ON]");
+                        DebugLog.Log($"MenuUser Stuck_PostRace: left to retry [ON]", LogType.Menu);
                         _ds4.SetDPadDirection(DualShock4DPadDirection.West);
                         buttonString = "L";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser Stuck_PostRace: left to retry [OFF]");
+                        DebugLog.Log($"MenuUser Stuck_PostRace: left to retry [OFF]", LogType.Menu);
                         _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                         buttonString = "";
                         _ds4.SubmitReport();
                         Thread.Sleep(250);
 
                         // and finally, click retry
-                        DebugLog.Log($"MenuUser Stuck_PostRace: click retry [ON]");
+                        DebugLog.Log($"MenuUser Stuck_PostRace: click retry [ON]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, true);
                         buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser Stuck_PostRace: click retry [OFF]");
+                        DebugLog.Log($"MenuUser Stuck_PostRace: click retry [OFF]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, false);
                         buttonString = "";
                         _ds4.SubmitReport();
 
-                        DebugLog.Log($"MenuUser Stuck_PostRace: set state to Stuck_PreRace");
+                        DebugLog.Log($"MenuUser Stuck_PostRace: set state to Stuck_PreRace", LogType.Menu);
                         currentMenuState = MenuState.Stuck_PreRace;
                     }
                     else if (currentMenuState == MenuState.Stuck_PreRace)
                     {
-                        DebugLog.Log($"MenuUser Stuck_PreRace: continuing recovery");
+                        DebugLog.Log($"MenuUser Stuck_PreRace: continuing recovery", LogType.Menu);
                         Thread.Sleep(8000);
 
-                        DebugLog.Log($"MenuUser Stuck_PreRace: click start [ON]");
+                        DebugLog.Log($"MenuUser Stuck_PreRace: click start [ON]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, true);
                         buttonString = "X";
                         _ds4.SubmitReport();
                         Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser Stuck_PreRace: click start [OFF]");
+                        DebugLog.Log($"MenuUser Stuck_PreRace: click start [OFF]", LogType.Menu);
                         _ds4.SetButtonState(confirmButton, false);
                         buttonString = "";
                         _ds4.SubmitReport();
@@ -1031,7 +1032,7 @@ namespace ClubmanSharp
                         currentMenuState = FindNewMenuState();
                         if (currentMenuState != MenuState.Race)
                         {
-                            DebugLog.Log($"BotError: MenuUser gave up. don't wanna do harm when totally lost");
+                            DebugLog.Log($"BotError: MenuUser gave up. don't wanna do harm when totally lost", LogType.Menu);
                             DisconnectController();
                             connected = false;
                             error = true;
@@ -1041,7 +1042,7 @@ namespace ClubmanSharp
                     }
                     else
                     {
-                        DebugLog.Log($"MenuLoop: in race... zzz");
+                        DebugLog.Log($"MenuLoop: in race... zzz", LogType.Menu);
                         Thread.Sleep(1000);
                     }
                 }
@@ -1056,7 +1057,7 @@ namespace ClubmanSharp
                         DisconnectController();
                         connected = false;
                         error = true;
-                        DebugLog.Log($"BotError: MenuUser failed\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}");
+                        DebugLog.Log($"BotError: MenuUser failed\n{ex.Source}\n{ex.Message}\n{ex.StackTrace}", LogType.Menu);
                         errorMsg = $"Unexpected error sending menu inputs to ViGEm.\nException details below:\n\n{ex.Message}";
                         return;
                     }
@@ -1066,14 +1067,14 @@ namespace ClubmanSharp
 
         private void DisconnectController()
         {
-            DebugLog.Log($"Starting DisconnectController");
+            DebugLog.Log($"Starting DisconnectController", LogType.Main);
             if (_ds4 != null)
             {
-                DebugLog.Log($"Sending disconnect to ds4 & nulling");
+                DebugLog.Log($"Sending disconnect to ds4 & nulling", LogType.Main);
                 _ds4.Disconnect();
                 _ds4 = null;
             }
-            DebugLog.Log($"Finished DisconnectController");
+            DebugLog.Log($"Finished DisconnectController", LogType.Main);
         }
     }
 }

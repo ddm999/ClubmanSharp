@@ -37,29 +37,32 @@ namespace ClubmanSharp
 
         public MainWindow()
         {
-            DebugLog.Log($"Starting MainWindow initialization");
+            DebugLog.Log($"Starting MainWindow initialization", LogType.Main);
             InitializeComponent();
 
-            CheckDebugLog.IsChecked = settings.debugLog > 0;
-            DebugLog.Log("Loaded MainWindow");
+            CheckMain.IsChecked = settings.debugLog > 0;
+            CheckMenu.IsChecked = settings.debugMenu > 0;
+            CheckDriv.IsChecked = settings.debugDriv > 0;
+            CheckTrck.IsChecked = settings.debugTrck > 0;
+            DebugLog.Log("Loaded MainWindow", LogType.Main);
 
             TxtHeader.Text = $"ClubmanSharp by ddm [v{currentVersion}]";
-            DebugLog.Log($"Version is {currentVersion}");
+            DebugLog.Log($"Version is {currentVersion}", LogType.Main);
 
             ip = settings.ip;
             TxtIP.Text = ip;
-            DebugLog.Log($"Loaded IP from settings as {settings.ip}");
+            DebugLog.Log($"Loaded IP from settings as {settings.ip}", LogType.Main);
 
             bot = new Bot();
-            DebugLog.Log($"Initialized Bot");
+            DebugLog.Log($"Initialized Bot", LogType.Main);
 
             CustomDelayShort.Text = $"{settings.customShortDelay}";
-            DebugLog.Log($"Loaded customShortDelay from settings as {settings.customShortDelay}");
+            DebugLog.Log($"Loaded customShortDelay from settings as {settings.customShortDelay}", LogType.Main);
             CustomDelayLong.Text = $"{settings.customLongDelay}";
-            DebugLog.Log($"Loaded customLongDelay from settings as {settings.customLongDelay}");
+            DebugLog.Log($"Loaded customLongDelay from settings as {settings.customLongDelay}", LogType.Main);
 
             SliderThrottle.Value = Convert.ToDouble(settings.maxThrottle);
-            DebugLog.Log($"Loaded maxThrottle from settings as {settings.maxThrottle}");
+            DebugLog.Log($"Loaded maxThrottle from settings as {settings.maxThrottle}", LogType.Main);
 
             switch (settings.delaySetting)
             {
@@ -73,7 +76,7 @@ namespace ClubmanSharp
                     RadioDelayCustom.IsChecked = true;
                     break;
             }
-            DebugLog.Log($"Loaded delaySetting from settings as {settings.delaySetting}");
+            DebugLog.Log($"Loaded delaySetting from settings as {settings.delaySetting}", LogType.Main);
 
             switch (settings.confirmButton)
             {
@@ -86,7 +89,7 @@ namespace ClubmanSharp
                     autoRetry = true;
                     break;
             }
-            DebugLog.Log($"Loaded confirmButton from settings as {settings.confirmButton}");
+            DebugLog.Log($"Loaded confirmButton from settings as {settings.confirmButton}", LogType.Main);
 
             switch (settings.autoRetry)
             {
@@ -97,14 +100,14 @@ namespace ClubmanSharp
                     RadioAutoRetryOn.IsChecked = true;
                     break;
             }
-            DebugLog.Log($"Loaded autoRetry from settings as {settings.autoRetry}");
+            DebugLog.Log($"Loaded autoRetry from settings as {settings.autoRetry}", LogType.Main);
 
             // WRX data wasn't actually required after all
             RadioCarGTO.IsChecked = true;
-            DebugLog.Log($"Set car to GTO (unused)");
+            DebugLog.Log($"Set car to GTO (unused)", LogType.Main);
 
             CompositionTarget.Rendering += VisualLoop;
-            DebugLog.Log($"Added VisualLoop");
+            DebugLog.Log($"Added VisualLoop", LogType.Main);
 
             TxtDetails.Text = "WARNING: The latest version of PS Remote Play does not currently work with virtual controllers!\n" +
                               "If you do not already use a patched version of PS Remote Play, *CLOSE REMOTE PLAY* and then click the button below " +
@@ -128,21 +131,21 @@ namespace ClubmanSharp
                                 "All developers of this project are not affiliated with Polyphony Digital or Sony Interactive Entertainment.";
 
             UpdateCheck();
-            if (DebugLog.isActive)
+            if (DebugLog.isActiveMain || DebugLog.isActiveMenu || DebugLog.isActiveDriver)
             {
-                MessageBox.Show("You have the debug.log setting enabled!\n" +
-                                "This option WILL make a huge log file if you leave it on all the time & don't delete the log every now and again.\n" +
+                MessageBox.Show("You have a debug.log setting enabled!\n" +
+                                "These options WILL make a huge log file if you leave it on all the time & don't delete the log every now and again.\n" +
                                 "Turn it off unless you really need someone to verify what's happening with the bot!",
                                 "ClubmanSharp Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                DebugLog.Log("Warning user of debug log setting");
+                DebugLog.Log("Warning user of debug log setting", LogType.Main);
             }
 
-            DebugLog.Log($"Finished MainWindow initialization");
+            DebugLog.Log($"Finished MainWindow initialization", LogType.Main);
         }
 
         public void TooMuchStuckDetectionCheck()
         {
-            DebugLog.Log($"Starting TooMuchStuckDetectionCheck");
+            DebugLog.Log($"Starting TooMuchStuckDetectionCheck", LogType.Main);
             if (bot is null)
                 return;
 
@@ -156,14 +159,14 @@ namespace ClubmanSharp
                 else
                     msg += "Try using large custom delays, or increasing your network stability if possible.";
                 MessageBox.Show(msg, "ClubmanSharp Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                DebugLog.Log($"Warning: {msg}");
+                DebugLog.Log($"Warning: {msg}", LogType.Main);
             }
-            DebugLog.Log($"Finished TooMuchStuckDetectionCheck");
+            DebugLog.Log($"Finished TooMuchStuckDetectionCheck", LogType.Main);
         }
 
         public async void UpdateCheck()
         {
-            DebugLog.Log($"Started UpdateCheck");
+            DebugLog.Log($"Started UpdateCheck", LogType.Main);
             try
             {
                 using var client = new HttpClient();
@@ -179,22 +182,22 @@ namespace ClubmanSharp
                                     "You may have issues using this out-of-date version.\n" +
                                     "Download the latest version at https://github.com/ddm999/ClubmanSharp/releases\n" +
                                     "(A link is available at the bottom of the Startup menu.)", "ClubmanSharp Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    DebugLog.Log($"Warning: serverVersion > currentVersion");
+                    DebugLog.Log($"Warning: serverVersion > currentVersion", LogType.Main);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Failed to check for updates.\nException details below:\n\n{ex.Message}", "ClubmanSharp Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                DebugLog.Log($"Error: UpdateCheck failed.\n{ex.Message}");
+                DebugLog.Log($"Error: UpdateCheck failed.\n{ex.Message}", LogType.Main);
             }
-            DebugLog.Log($"Finished UpdateCheck");
+            DebugLog.Log($"Finished UpdateCheck", LogType.Main);
         }
 
         public void VisualLoop(object? sender, EventArgs? e)
         {
             if (bot.error is true)
             {
-                DebugLog.Log($"Error: bot.error\n{bot.errorMsg}");
+                DebugLog.Log($"Error: bot.error\n{bot.errorMsg}", LogType.Main);
                 bool retriableError = bot.errorMsg.Contains("packet") || bot.errorMsg.Contains("Unexpected error");
                 if (!(autoRetry && retriableError))
                 {
@@ -211,11 +214,11 @@ namespace ClubmanSharp
 
                 if (autoRetry && retriableError)
                 {
-                    DebugLog.Log($"AutoRetry: Error is retriable");
+                    DebugLog.Log($"AutoRetry: Error is retriable", LogType.Main);
                     Thread.Sleep(3000);
                     autoRetryCount++;
                     StartStop_Click(null, null);
-                    DebugLog.Log($"AutoRetry: Clicked the Start button");
+                    DebugLog.Log($"AutoRetry: Clicked the Start button", LogType.Main);
                 }
             }
 
@@ -295,7 +298,7 @@ namespace ClubmanSharp
 
         private void StartStop_Click(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started StartStop_Click");
+            DebugLog.Log($"Started StartStop_Click", LogType.Main);
             TxtIP.IsEnabled = false;
             BtnStartStop.IsEnabled = false;
 
@@ -310,7 +313,7 @@ namespace ClubmanSharp
                 {
                     bot.Stop();
                     MessageBox.Show(bot.errorMsg, "ClubmanSharp Error (starting bot)", MessageBoxButton.OK, MessageBoxImage.Error);
-                    DebugLog.Log($"Error: bot.error\n{bot.errorMsg}");
+                    DebugLog.Log($"Error: bot.error\n{bot.errorMsg}", LogType.Main);
                     bot.error = false;
                     BtnStartStop.Content = "Start";
                     TxtIP.IsEnabled = true;
@@ -328,20 +331,20 @@ namespace ClubmanSharp
                 TxtIP.IsEnabled = true;
                 BtnStartStop.IsEnabled = true;
             }
-            DebugLog.Log($"Finished StartStop_Click");
+            DebugLog.Log($"Finished StartStop_Click", LogType.Main);
         }
 
         private void Hyperlink_Click(object sender, RequestNavigateEventArgs e)
         {
-            DebugLog.Log($"Started Hyperlink_Click");
+            DebugLog.Log($"Started Hyperlink_Click", LogType.Main);
             Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri) { UseShellExecute = true });
             e.Handled = true;
-            DebugLog.Log($"Finished Hyperlink_Click");
+            DebugLog.Log($"Finished Hyperlink_Click", LogType.Main);
         }
 
         private void RadioDelayPS4_Checked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started RadioDelayPS4_Checked");
+            DebugLog.Log($"Started RadioDelayPS4_Checked", LogType.Main);
             if (bot is null)
                 return;
             CustomDelayShort.Text = "250";
@@ -354,12 +357,12 @@ namespace ClubmanSharp
             RadioDelayCustom.IsChecked = false;
             settings.delaySetting = 0;
             settings.Save();
-            DebugLog.Log($"Finished RadioDelayPS4_Checked");
+            DebugLog.Log($"Finished RadioDelayPS4_Checked", LogType.Main);
         }
 
         private void RadioDelayPS5_Checked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started RadioDelayPS5_Checked");
+            DebugLog.Log($"Started RadioDelayPS5_Checked", LogType.Main);
             CustomDelayShort.Text = "250";
             CustomDelayLong.Text = "1000";
             bot.ShortDelay = 250;
@@ -370,12 +373,12 @@ namespace ClubmanSharp
             RadioDelayCustom.IsChecked = false;
             settings.delaySetting = 1;
             settings.Save();
-            DebugLog.Log($"Finished RadioDelayPS5_Checked");
+            DebugLog.Log($"Finished RadioDelayPS5_Checked", LogType.Main);
         }
 
         private void RadioDelayCustom_Checked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started RadioDelayCustom_Checked");
+            DebugLog.Log($"Started RadioDelayCustom_Checked", LogType.Main);
             bot.ShortDelay = int.Parse(CustomDelayShort.Text);
             bot.LongDelay = int.Parse(CustomDelayLong.Text);
             CustomDelayShort.IsEnabled = true;
@@ -384,26 +387,26 @@ namespace ClubmanSharp
             RadioDelayPS5.IsChecked = false;
             settings.delaySetting = 2;
             settings.Save();
-            DebugLog.Log($"Finished RadioDelayCustom_Checked");
+            DebugLog.Log($"Finished RadioDelayCustom_Checked", LogType.Main);
         }
 
         private void TxtIP_TextChanged(object sender, TextChangedEventArgs e)
         {
-            DebugLog.Log($"Started TxtIP_TextChanged");
-            DebugLog.Log($"TxtIP is {TxtIP.Text}");
+            DebugLog.Log($"Started TxtIP_TextChanged", LogType.Main);
+            DebugLog.Log($"TxtIP is {TxtIP.Text}", LogType.Main);
             if (TxtIP.Text == "x")
                 return;
 
             ip = TxtIP.Text;
             settings.ip = ip;
             settings.Save();
-            DebugLog.Log($"Finished TxtIP_TextChanged");
+            DebugLog.Log($"Finished TxtIP_TextChanged", LogType.Main);
         }
 
         private void CustomDelayShort_TextChanged(object sender, TextChangedEventArgs e)
         {
-            DebugLog.Log($"Started CustomDelayShort_TextChanged");
-            DebugLog.Log($"CustomDelayShort is {CustomDelayShort.Text}");
+            DebugLog.Log($"Started CustomDelayShort_TextChanged", LogType.Main);
+            DebugLog.Log($"CustomDelayShort is {CustomDelayShort.Text}", LogType.Main);
             if (bot is null)
                 return;
             bool success = int.TryParse(CustomDelayShort.Text, out int number);
@@ -415,17 +418,17 @@ namespace ClubmanSharp
             }
             else
             {
-                DebugLog.Log($"Error: CustomDelayShort invalid");
+                DebugLog.Log($"Error: CustomDelayShort invalid", LogType.Main);
                 MessageBox.Show($"Invalid delay of {CustomDelayShort.Text}", "ClubmanSharp Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 CustomDelayShort.Text = $"{bot.ShortDelay}";
             }
-            DebugLog.Log($"Finished CustomDelayShort_TextChanged");
+            DebugLog.Log($"Finished CustomDelayShort_TextChanged", LogType.Main);
         }
 
         private void CustomDelayLong_TextChanged(object sender, TextChangedEventArgs e)
         {
-            DebugLog.Log($"Started CustomDelayLong_TextChanged");
-            DebugLog.Log($"CustomDelayLong is {CustomDelayLong.Text}");
+            DebugLog.Log($"Started CustomDelayLong_TextChanged", LogType.Main);
+            DebugLog.Log($"CustomDelayLong is {CustomDelayLong.Text}", LogType.Main);
             if (bot is null)
                 return;
             bool success = int.TryParse(CustomDelayLong.Text, out int number);
@@ -437,16 +440,16 @@ namespace ClubmanSharp
             }
             else
             {
-                DebugLog.Log($"Error: CustomDelayShort invalid");
+                DebugLog.Log($"Error: CustomDelayShort invalid", LogType.Main);
                 MessageBox.Show($"Invalid delay of {CustomDelayLong.Text}", "ClubmanSharp Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 CustomDelayLong.Text = $"{bot.LongDelay}";
             }
-            DebugLog.Log($"Finished CustomDelayLong_TextChanged");
+            DebugLog.Log($"Finished CustomDelayLong_TextChanged", LogType.Main);
         }
 
         private void RadioCarGTO_Checked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started RadioCarGTO_Checked");
+            DebugLog.Log($"Started RadioCarGTO_Checked", LogType.Main);
             if (bot is null)
                 return;
             bot.currentTrackData = new GTOTrackData();
@@ -454,12 +457,12 @@ namespace ClubmanSharp
             RadioCarWRX.IsChecked = false;
             settings.carSetting = 0;
             settings.Save();
-            DebugLog.Log($"Finished RadioCarGTO_Checked");
+            DebugLog.Log($"Finished RadioCarGTO_Checked", LogType.Main);
         }
 
         private void RadioCarWRX_Checked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started RadioCarWRX_Checked");
+            DebugLog.Log($"Started RadioCarWRX_Checked", LogType.Main);
             /*if (bot is null)
                 return;
             bot.currentTrackData = new WRXTrackData();
@@ -467,13 +470,13 @@ namespace ClubmanSharp
             RadioCarGTO.IsChecked = false;
             settings.carSetting = 1;
             settings.Save();*/
-            DebugLog.Log($"Finished RadioCarWRX_Checked");
+            DebugLog.Log($"Finished RadioCarWRX_Checked", LogType.Main);
         }
 
         private void SliderThrottle_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            DebugLog.Log($"Started SliderThrottle_ValueChanged");
-            DebugLog.Log($"SliderThrottle is {SliderThrottle.Value}");
+            DebugLog.Log($"Started SliderThrottle_ValueChanged", LogType.Main);
+            DebugLog.Log($"SliderThrottle is {SliderThrottle.Value}", LogType.Main);
             byte byteVal = Convert.ToByte(SliderThrottle.Value);
             SliderThrottle.ToolTip = $"{byteVal}/255";
             TxtThrottleValue.Text = $"{byteVal}";
@@ -484,12 +487,12 @@ namespace ClubmanSharp
             bot.LateRaceMaxThrottle = byteVal;
             settings.maxThrottle = byteVal;
             settings.Save();
-            DebugLog.Log($"Finished SliderThrottle_ValueChanged");
+            DebugLog.Log($"Finished SliderThrottle_ValueChanged", LogType.Main);
         }
 
         private void RadioConfirmCross_Checked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started RadioConfirmCross_Checked");
+            DebugLog.Log($"Started RadioConfirmCross_Checked", LogType.Main);
             if (bot is null)
                 return;
             bot.confirmButton = DualShock4Button.Cross;
@@ -498,12 +501,12 @@ namespace ClubmanSharp
             RadioConfirmCircle.IsChecked = false;
             settings.confirmButton = 0;
             settings.Save();
-            DebugLog.Log($"Finished RadioConfirmCross_Checked");
+            DebugLog.Log($"Finished RadioConfirmCross_Checked", LogType.Main);
         }
 
         private void RadioConfirmCircle_Checked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started RadioConfirmCircle_Checked");
+            DebugLog.Log($"Started RadioConfirmCircle_Checked", LogType.Main);
             if (bot is null)
                 return;
             bot.confirmButton = DualShock4Button.Circle;
@@ -512,54 +515,128 @@ namespace ClubmanSharp
             RadioConfirmCross.IsChecked = false;
             settings.confirmButton = 1;
             settings.Save();
-            DebugLog.Log($"Finished RadioConfirmCircle_Checked");
+            DebugLog.Log($"Finished RadioConfirmCircle_Checked", LogType.Main);
         }
 
         private void RadioAutoRetryOff_Checked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started RadioAutoRetryOff_Checked");
+            DebugLog.Log($"Started RadioAutoRetryOff_Checked", LogType.Main);
             RadioAutoRetryOn.IsChecked = false;
             autoRetry = false;
             settings.autoRetry = 0;
             settings.Save();
-            DebugLog.Log($"Finished RadioAutoRetryOff_Checked");
+            DebugLog.Log($"Finished RadioAutoRetryOff_Checked", LogType.Main);
         }
 
         private void RadioAutoRetryOn_Checked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started RadioAutoRetryOn_Checked");
+            DebugLog.Log($"Started RadioAutoRetryOn_Checked", LogType.Main);
             RadioAutoRetryOff.IsChecked = false;
             autoRetry = true;
             settings.autoRetry = 1;
             settings.Save();
-            DebugLog.Log($"Finished RadioAutoRetryOn_Checked");
+            DebugLog.Log($"Finished RadioAutoRetryOn_Checked", LogType.Main);
         }
 
+        private void CheckDebugMain_Checked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckDebugMain_Checked", LogType.Main);
+            DebugLog.SetActive(true, LogType.Main);
+            settings.debugLog = 1;
+            settings.Save();
+            DebugLog.Log($"Finished CheckDebugMain_Checked", LogType.Main);
+        }
+
+        private void CheckDebugMain_Unchecked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckDebugMain_Unchecked", LogType.Main);
+            DebugLog.SetActive(false, LogType.Main);
+            settings.debugLog = 0;
+            settings.Save();
+            DebugLog.Log($"Finished CheckDebugMain_Unchecked", LogType.Main);
+        }
+
+        private void CheckDebugMenu_Checked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckDebugMenu_Checked", LogType.Main);
+            DebugLog.SetActive(true, LogType.Menu);
+            settings.debugLog = 1;
+            settings.Save();
+            DebugLog.Log($"Finished CheckDebugMenu_Checked", LogType.Main);
+        }
+
+        private void CheckDebugMenu_Unchecked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckDebugMenu_Unchecked", LogType.Main);
+            DebugLog.SetActive(false, LogType.Menu);
+            settings.debugLog = 0;
+            settings.Save();
+            DebugLog.Log($"Finished CheckDebugMenu_Unchecked", LogType.Main);
+        }
+
+        private void CheckDebugDriv_Checked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckDebugDriv_Checked", LogType.Main);
+            DebugLog.SetActive(true, LogType.Driv);
+            settings.debugLog = 1;
+            settings.Save();
+            DebugLog.Log($"Finished CheckDebugDriv_Checked", LogType.Main);
+        }
+
+        private void CheckDebugDriv_Unchecked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckDebugDriv_Unchecked", LogType.Main);
+            DebugLog.SetActive(false, LogType.Driv);
+            settings.debugLog = 0;
+            settings.Save();
+            DebugLog.Log($"Finished CheckDebugDriv_Unchecked", LogType.Main);
+        }
+
+        private void CheckDebugTrck_Checked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckDebugTrck_Checked", LogType.Main);
+            DebugLog.SetActive(true, LogType.Trck);
+            settings.debugLog = 1;
+            settings.Save();
+            DebugLog.Log($"Finished CheckDebugTrck_Checked", LogType.Main);
+        }
+
+        private void CheckDebugTrck_Unchecked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckDebugTrck_Unchecked", LogType.Main);
+            DebugLog.SetActive(false, LogType.Trck);
+            settings.debugLog = 0;
+            settings.Save();
+            DebugLog.Log($"Finished CheckDebugTrck_Unchecked", LogType.Main);
+        }
+
+        /*
         private void CheckDebugLog_Checked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started CheckDebugLog_Checked");
+            DebugLog.Log($"Started CheckDebugLog_Checked", LogType.Main);
             DebugLog.SetActive(true);
             settings.debugLog = 1;
             settings.Save();
-            DebugLog.Log($"Finished CheckDebugLog_Checked");
+            DebugLog.Log($"Finished CheckDebugLog_Checked", LogType.Main);
         }
 
         private void CheckDebugLog_Unchecked(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started CheckDebugLog_Unchecked");
+            DebugLog.Log($"Started CheckDebugLog_Unchecked", LogType.Main);
             DebugLog.SetActive(false);
             settings.debugLog = 0;
             settings.Save();
-            DebugLog.Log($"Finished CheckDebugLog_Unchecked");
+            DebugLog.Log($"Finished CheckDebugLog_Unchecked", LogType.Main);
         }
+        */
 
         /*
          * The following function is from https://github.com/xeropresence/remoteplay-version-patcher
         */
         private static string? FindRemotePlay()
         {
-            DebugLog.Log($"Started FindRemotePlay (nofin)");
-            DebugLog.Log($"Environment.Is64BitOperatingSystem {Environment.Is64BitOperatingSystem}");
+            DebugLog.Log($"Started FindRemotePlay (nofin)", LogType.Main);
+            DebugLog.Log($"Environment.Is64BitOperatingSystem {Environment.Is64BitOperatingSystem}", LogType.Main);
             var baseKey = Environment.Is64BitOperatingSystem ?
                 @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\" :
                 @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\";
@@ -570,40 +647,40 @@ namespace ClubmanSharp
                     .Select(name => keys.OpenSubKey(name))
                     .FirstOrDefault(key => key.GetValue("DisplayName", "").ToString().Contains("PS Remote Play") &&
                                            key.GetValue("Publisher", "").ToString().Contains("Sony"));
-                DebugLog.Log($"remotePlayKey {remotePlayKey}");
+                DebugLog.Log($"remotePlayKey {remotePlayKey}", LogType.Main);
                 var path = remotePlayKey?.GetValue("InstallLocation", null)?.ToString() ?? string.Empty;
-                DebugLog.Log($"path {path}");
+                DebugLog.Log($"path {path}", LogType.Main);
                 return Directory.Exists(path) ? path : null;
             }
         }
 
         public async Task DownloadPatchedRemotePlay(string path)
         {
-            DebugLog.Log($"Started DownloadPatchedRemotePlay");
+            DebugLog.Log($"Started DownloadPatchedRemotePlay", LogType.Main);
             using var client = new HttpClient();
             using var stream = await client.GetStreamAsync("http://gt-mod.site/PS_Remote_Play_v550_patch.zip");
             using var fileStream = new FileStream(path, FileMode.Create);
             stream.CopyTo(fileStream);
             fileStream.Close();
-            DebugLog.Log($"Finished DownloadPatchedRemotePlay");
+            DebugLog.Log($"Finished DownloadPatchedRemotePlay", LogType.Main);
         }
 
         private async void BtnPatchedRemotePlay_Click(object sender, RoutedEventArgs e)
         {
-            DebugLog.Log($"Started BtnPatchedRemotePlay_Click");
+            DebugLog.Log($"Started BtnPatchedRemotePlay_Click", LogType.Main);
             string? outpath = FindRemotePlay();
 
-            DebugLog.Log($"Directory.GetCurrentDirectory {Directory.GetCurrentDirectory()}");
+            DebugLog.Log($"Directory.GetCurrentDirectory {Directory.GetCurrentDirectory()}", LogType.Main);
             string dlpath = Path.Combine(Directory.GetCurrentDirectory(), "PS_Remote_Play_v550_patch.zip");
             string extractpath = Path.Combine(Directory.GetCurrentDirectory(), "PS_Remote_Play_v550_patch");
 
             // delete if exists, fine if this fails
-            DebugLog.Log($"Deleting existing download files");
-            try { File.Delete(dlpath); } catch (Exception) { DebugLog.Log($"Failed to delete download path (OK!)"); }
-            try { Directory.Delete(extractpath, true); } catch (Exception) { DebugLog.Log($"Failed to delete extract path (OK!)"); }
+            DebugLog.Log($"Deleting existing download files", LogType.Main);
+            try { File.Delete(dlpath); } catch (Exception) { DebugLog.Log($"Failed to delete download path (OK!)", LogType.Main); }
+            try { Directory.Delete(extractpath, true); } catch (Exception) { DebugLog.Log($"Failed to delete extract path (OK!)", LogType.Main); }
 
             await DownloadPatchedRemotePlay(dlpath);
-            DebugLog.Log($"Extracting downloaded zip");
+            DebugLog.Log($"Extracting downloaded zip", LogType.Main);
             ZipFile.ExtractToDirectory(dlpath, extractpath);
 
             if (
@@ -614,12 +691,12 @@ namespace ClubmanSharp
                 File.Exists(Path.Combine(outpath, "RpCtrlWrapper.dll"))
             )
             {
-                DebugLog.Log($"Info: Patch install");
+                DebugLog.Log($"Info: Patch install", LogType.Main);
                 MessageBox.Show("ClubmanSharp will now install the patch for Remote Play.\n"+
                                 "You may need to accept a 'Windows Command Processor' UAC prompt that will appear after this box.",
                                 "ClubmanSharp Information", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                DebugLog.Log($"Initializing RemotePlay.exe install process");
+                DebugLog.Log($"Initializing RemotePlay.exe install process", LogType.Main);
                 Process process = new();
                 ProcessStartInfo startInfo = new()
                 {
@@ -630,10 +707,10 @@ namespace ClubmanSharp
                     UseShellExecute = true
                 };
                 process.StartInfo = startInfo;
-                DebugLog.Log($"Starting RemotePlay.exe install process");
+                DebugLog.Log($"Starting RemotePlay.exe install process", LogType.Main);
                 process.Start();
 
-                DebugLog.Log($"Initializing RpCtrlWrapper.dll install process");
+                DebugLog.Log($"Initializing RpCtrlWrapper.dll install process", LogType.Main);
                 Process process2 = new();
                 ProcessStartInfo startInfo2 = new()
                 {
@@ -644,10 +721,10 @@ namespace ClubmanSharp
                     UseShellExecute = true
                 };
                 process2.StartInfo = startInfo2;
-                DebugLog.Log($"Starting RpCtrlWrapper.dll install process");
+                DebugLog.Log($"Starting RpCtrlWrapper.dll install process", LogType.Main);
                 process2.Start();
 
-                DebugLog.Log($"Deleting download & extract files");
+                DebugLog.Log($"Deleting download & extract files", LogType.Main);
                 try
                 {
                     File.Delete(dlpath);
@@ -656,7 +733,7 @@ namespace ClubmanSharp
                 // ignore delete fails, it probably failed for a reason and might help the user if the files are left
                 catch (Exception)
                 {
-                    DebugLog.Log($"Failed to delete download & extract files (OK!)");
+                    DebugLog.Log($"Failed to delete download & extract files (OK!)", LogType.Main);
                 }
 
                 MessageBox.Show("This should have successfully patched Remote Play.\n"+
@@ -664,16 +741,16 @@ namespace ClubmanSharp
                                 "If it doesn't, try this process again, making sure that Remote Play is fully closed.\n"+
                                 "If you can't get it working, you can request help in the GitHub issues.",
                                 "ClubmanSharp Information", MessageBoxButton.OK, MessageBoxImage.Information);
-                DebugLog.Log($"Info: Patch probably succeeded");
+                DebugLog.Log($"Info: Patch probably succeeded", LogType.Main);
             }
             else
             {
                 MessageBox.Show("Failed to find current Remote Play installation:\n"+
                                 "you can manually patch using the downloaded files left next to ClubmanSharp.",
                                 "ClubmanSharp Information", MessageBoxButton.OK, MessageBoxImage.Information);
-                DebugLog.Log($"Info: Locating Remote Play install failed");
+                DebugLog.Log($"Info: Locating Remote Play install failed", LogType.Main);
             }
-            DebugLog.Log($"Finished BtnPatchedRemotePlay_Click");
+            DebugLog.Log($"Finished BtnPatchedRemotePlay_Click", LogType.Main);
         }
     }
 }
