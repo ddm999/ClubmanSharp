@@ -31,6 +31,8 @@ namespace ClubmanSharp
         public DualShock4Button confirmButton = DualShock4Button.Cross;
         public DualShock4Button cancelButton = DualShock4Button.Circle;
 
+        public bool skipEventSpecificChecks = false;
+
         public bool connected = false;
         public bool error = false;
         public string errorMsg = "";
@@ -443,6 +445,7 @@ namespace ClubmanSharp
             RaceResult,
             Replay,
             PostRace,
+            PreOrPostRace,
             Stuck_PreOrPostRace,
             Stuck_PostRace,
             Stuck_PreRace,
@@ -460,8 +463,12 @@ namespace ClubmanSharp
                 return MenuState.RacePaused;
             if (currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
                 return MenuState.Race;
-            if (currentPacket.NumCarsAtPreRace > 1)
+            // Clubman Cup Plus event-specific check: time of day is locked to expected value
+            if (!skipEventSpecificChecks && currentPacket.TimeOfDayProgression == currentTrackData.eventTime)
                 return MenuState.PreRace;
+            // non-event specific check: fuel stuck at maximum
+            if (currentPacket.GasLevel == currentPacket.GasCapacity)
+                return MenuState.PreOrPostRace;
             if (allowReplay && currentPacket.LapsInRace > 0)
                 return MenuState.Replay;
             return MenuState.Unknown;
@@ -469,8 +476,8 @@ namespace ClubmanSharp
 
         public void PreRaceStuckDetection()
         {
-            DebugLog.Log($"Incremented preRaceStuckCount", LogType.Menu);
             _preRaceStuckCount += 1;
+            DebugLog.Log($"Incremented preRaceStuckCount ({_preRaceStuckCount})", LogType.Menu);
             if (_preRaceStuckCount >= 5)
             {
                 DebugLog.Log($"PreRaceStuckDetection STUCK!!", LogType.Menu);
@@ -482,8 +489,8 @@ namespace ClubmanSharp
 
         public void RaceResultStuckDetection()
         {
-            DebugLog.Log($"Incremented raceResultStuckCount", LogType.Menu);
             _raceResultStuckCount += 1;
+            DebugLog.Log($"Incremented raceResultStuckCount ({_raceResultStuckCount})", LogType.Menu);
             if (_raceResultStuckCount >= 100)
             {
                 DebugLog.Log($"RaceResultStuckDetection STUCK!!", LogType.Menu);
@@ -552,9 +559,9 @@ namespace ClubmanSharp
             else if (currentMenuState == MenuState.Replay)
             {
                 DebugLog.Log($"FindNewMenuState: state WAS Replay.", LogType.Menu);
-                if (currentPacket.NumCarsAtPreRace > 0)
+                if (currentPacket.NumCarsAtPreRace < 0) //note: packet data changed, is now numcars during race, -1 otherwise
                 {
-                    DebugLog.Log($"FindNewMenuState: prerace cars set! State is PostRace.", LogType.Menu);
+                    DebugLog.Log($"FindNewMenuState: numcars no longer set! State is PostRace.", LogType.Menu);
                     return MenuState.PostRace;
                 }
             }
@@ -635,6 +642,53 @@ namespace ClubmanSharp
             Thread.Sleep(ShortDelay);
         }
 
+        private void PostRaceInputRunner()
+        {
+            // ensure we're hovered over retry
+
+            // first, smash the hell out of the circle button
+            for (int i = 0; i < 5; i++)
+            {
+                DebugLog.Log($"PostRaceInputRunner: cancel to exit [ON]", LogType.Menu);
+                _ds4.SetButtonState(cancelButton, true);
+                buttonString = "O";
+                _ds4.SubmitReport();
+                Thread.Sleep(50);
+
+                DebugLog.Log($"PostRaceInputRunner: cancel to exit [OFF]", LogType.Menu);
+                _ds4.SetButtonState(cancelButton, false);
+                buttonString = "";
+                _ds4.SubmitReport();
+                Thread.Sleep(ShortDelay);
+            }
+
+            // then press left to move to Retry from Quit
+            DebugLog.Log($"PostRaceInputRunner: left to start [ON]", LogType.Menu);
+            _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+            buttonString = "L";
+            _ds4.SubmitReport();
+            Thread.Sleep(50);
+
+            DebugLog.Log($"PostRaceInputRunner: left to start [OFF]", LogType.Menu);
+            _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+            buttonString = "";
+            _ds4.SubmitReport();
+            Thread.Sleep(ShortDelay);
+
+            // and finally, click retry
+            DebugLog.Log($"PostRaceInputRunner: click retry [ON]", LogType.Menu);
+            _ds4.SetButtonState(confirmButton, true);
+            buttonString = "X";
+            _ds4.SubmitReport();
+            Thread.Sleep(50);
+
+            DebugLog.Log($"PostRaceInputRunner: click retry [OFF]", LogType.Menu);
+            _ds4.SetButtonState(confirmButton, false);
+            buttonString = "";
+            _ds4.SubmitReport();
+            Thread.Sleep(ShortDelay);
+        }
+
         private void MenuUserLoop()
         {
             DebugLog.Log($"Starting MenuUserLoop (nofin)", LogType.Menu);
@@ -675,17 +729,13 @@ namespace ClubmanSharp
             {
                 if (currentMenuState == MenuState.PreRace)
                 {
-                    // check the right number of cars are in PreRace
-                    if (currentPacket.NumCarsAtPreRace != 5)
-                    {
-                        DebugLog.Log($"BotError: incorrect prerace cars - was {currentPacket.NumCarsAtPreRace}", LogType.Menu);
-                        DisconnectController();
-                        connected = false;
-                        error = true;
-                        errorMsg = $"Incorrect number of cars in Pre-Race.\nPlease verify that you have selected the Tokyo Expressway Clubman Cup Plus event.\n\n(The Japanese Clubman Cup 550 is a different event!)";
-                        return;
-                    }
-
+                    //NOTE: packet format changed, cannot test pre-race values
+                    PreRaceInputRunner();
+                }
+                else if (currentMenuState == MenuState.PreOrPostRace)
+                {
+                    PostRaceInputRunner();
+                    Thread.Sleep(LongDelay);
                     PreRaceInputRunner();
                 }
                 else if (currentMenuState == MenuState.Race)
@@ -818,6 +868,7 @@ namespace ClubmanSharp
                             _ds4.SetButtonState(DualShock4Button.TriggerRight, false);
                             _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 0);
                             _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
+                            DebugLog.Log($"MenuUser RaceResult: reset all inputs", LogType.Menu);
 
                             registeredResult = true;
 

@@ -37,13 +37,9 @@ namespace ClubmanSharp
 
         public MainWindow()
         {
-            DebugLog.Log($"Starting MainWindow initialization", LogType.Main);
             InitializeComponent();
 
             CheckMain.IsChecked = settings.debugLog > 0;
-            CheckMenu.IsChecked = settings.debugMenu > 0;
-            CheckDriv.IsChecked = settings.debugDriv > 0;
-            CheckTrck.IsChecked = settings.debugTrck > 0;
             DebugLog.Log("Loaded MainWindow", LogType.Main);
 
             TxtHeader.Text = $"ClubmanSharp by ddm [v{currentVersion}]";
@@ -55,6 +51,12 @@ namespace ClubmanSharp
 
             bot = new Bot();
             DebugLog.Log($"Initialized Bot", LogType.Main);
+
+            CheckMenu.IsChecked = settings.debugMenu > 0;
+            CheckDriv.IsChecked = settings.debugDriv > 0;
+            CheckTrck.IsChecked = settings.debugTrck > 0;
+            CheckOverrides.IsChecked = settings.trackOverrides > 0;
+            DebugLog.Log("Loaded checkbox settings", LogType.Main);
 
             CustomDelayShort.Text = $"{settings.customShortDelay}";
             DebugLog.Log($"Loaded customShortDelay from settings as {settings.customShortDelay}", LogType.Main);
@@ -272,14 +274,16 @@ namespace ClubmanSharp
                     TxtDebug.Text += "\nPacket information:\n";
                     TxtDebug.Text += $"DateReceived: {bot.currentPacket.DateReceived}\n";
                     TxtDebug.Text += $"CarCode: {bot.currentPacket.CarCode}\n";
-                    TxtDebug.Text += $"NumCarsAtPreRace: {bot.currentPacket.NumCarsAtPreRace}\n";
                     TxtDebug.Text += $"CurrentGear: {bot.currentPacket.CurrentGear}    ";
                     TxtDebug.Text += $"EngineRPM: {bot.currentPacket.EngineRPM}    ";
                     TxtDebug.Text += $"MetersPerSecond: {bot.currentPacket.MetersPerSecond}\n";
+                    TxtDebug.Text += $"Position: {bot.currentPacket.PreRaceStartPositionOrQualiPos}    ";
+                    TxtDebug.Text += $"NumCars: {bot.currentPacket.NumCarsAtPreRace}\n";
                     TxtDebug.Text += $"LapCount: {bot.currentPacket.LapCount}    ";
                     TxtDebug.Text += $"LapsInRace: {bot.currentPacket.LapsInRace}\n";
-                    TxtDebug.Text += $"BestLapTime: {bot.currentPacket.BestLapTime}    ";
-                    TxtDebug.Text += $"LastLapTime: {bot.currentPacket.LastLapTime}\n";
+                    TxtDebug.Text += $"BestLapTime: {bot.currentPacket.BestLapTime:mm\\:ss\\.fff}    ";
+                    TxtDebug.Text += $"LastLapTime: {bot.currentPacket.LastLapTime:mm\\:ss\\.fff}    ";
+                    TxtDebug.Text += $"TimeOfDay: {bot.currentPacket.TimeOfDayProgression:hh\\:mm\\:ss}\n";
                     TxtDebug.Text += $"RelativeOrientationToNorth: {bot.currentPacket.RelativeOrientationToNorth}\n";
                     TxtDebug.Text += $"Position: {bot.currentPacket.Position}\n";
                     TxtDebug.Text += $"Rotation: {bot.currentPacket.Rotation}\n";
@@ -536,6 +540,28 @@ namespace ClubmanSharp
             settings.autoRetry = 1;
             settings.Save();
             DebugLog.Log($"Finished RadioAutoRetryOn_Checked", LogType.Main);
+        }
+
+        private void CheckOverrides_Checked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckOverrides_Checked", LogType.Main);
+            if (bot is null)
+                return;
+            bot.skipEventSpecificChecks = true;
+            settings.trackOverrides = 1;
+            settings.Save();
+            DebugLog.Log($"Finished CheckOverrides_Checked", LogType.Main);
+        }
+
+        private void CheckOverrides_Unchecked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckOverrides_Unchecked", LogType.Main);
+            if (bot is null)
+                return;
+            bot.skipEventSpecificChecks = false;
+            settings.trackOverrides = 0;
+            settings.Save();
+            DebugLog.Log($"Finished CheckOverrides_Unchecked", LogType.Main);
         }
 
         private void CheckDebugMain_Checked(object sender, RoutedEventArgs e)

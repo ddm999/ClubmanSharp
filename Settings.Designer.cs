@@ -166,5 +166,17 @@ namespace ClubmanSharp {
                 this["debugTrck"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public byte trackOverrides {
+            get {
+                return ((byte)(this["trackOverrides"]));
+            }
+            set {
+                this["trackOverrides"] = value;
+            }
+        }
     }
 }
