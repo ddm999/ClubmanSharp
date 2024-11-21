@@ -452,7 +452,7 @@ namespace ClubmanSharp
             DebugLog.Log($"Started RadioCarGTO_Checked", LogType.Main);
             if (bot is null)
                 return;
-            bot.currentTrackData = new GTOTrackData();
+            bot.currentTrackData = new TokyoClubmanPlusTrackData();
 
             RadioCarWRX.IsChecked = false;
             settings.carSetting = 0;

@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 
 namespace ClubmanSharp.TrackData
 {
-    public class GTOTrackData : TrackDataBase
+    public class TokyoClubmanPlusTrackData : TrackDataBase
     {
+        public override TimeSpan eventTime { get; } = new TimeSpan(3, 49, 0);
+
         public override Segment[] initialsegments { get; } =
         {
           new Segment( 160,  775,  195,  875,  -70.0, 300.0),

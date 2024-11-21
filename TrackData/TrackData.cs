@@ -27,6 +27,7 @@ namespace ClubmanSharp.TrackData
         public bool useInitialSegments = true;
         public int segmentNum = 0;
         public int pitboxCounter = 0;
+        public virtual TimeSpan eventTime { get; } = TimeSpan.Zero;
         public virtual Segment[] initialsegments { get; } = Array.Empty<Segment>();
         public virtual Segment[] segments { get; } = Array.Empty<Segment>();
         public virtual Segment pitbox { get; } = new();
