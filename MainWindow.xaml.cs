@@ -11,8 +11,6 @@ using System.Windows.Media;
 using System.Windows.Navigation;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Windows.Interop;
 using System.Threading.Tasks;
 using System.IO.Compression;
 using System.Threading;
@@ -137,7 +135,7 @@ namespace ClubmanSharp
             {
                 MessageBox.Show("You have a debug.log setting enabled!\n" +
                                 "These options WILL make a huge log file if you leave it on all the time & don't delete the log every now and again.\n" +
-                                "Turn it off unless you really need someone to verify what's happening with the bot!",
+                                "Turn them off unless you really need someone to verify what's happening with the bot!",
                                 "ClubmanSharp Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
                 DebugLog.Log("Warning user of debug log setting", LogType.Main);
             }
@@ -248,6 +246,8 @@ namespace ClubmanSharp
                 TxtState.Text += "Replay";
             else if (bot.currentMenuState == Bot.MenuState.PostRace)
                 TxtState.Text += "Post Race";
+            else if (bot.currentMenuState == Bot.MenuState.PreOrPostRace)
+                TxtState.Text += "u Pre/Post Race";
             else if (bot.currentMenuState == Bot.MenuState.Stuck_PreOrPostRace)
                 TxtState.Text += "Stk Unknown";
             else if (bot.currentMenuState == Bot.MenuState.Stuck_Replay)

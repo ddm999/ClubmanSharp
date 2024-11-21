@@ -517,6 +517,7 @@ namespace ClubmanSharp
                 if (currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
                 {
                     DebugLog.Log($"FindNewMenuState: car on track! State is Race.", LogType.Menu);
+                    EventCheck();
                     return MenuState.Race;
                 }
                 PreRaceStuckDetection();
@@ -602,18 +603,7 @@ namespace ClubmanSharp
                 _ds4.SubmitReport();
                 Thread.Sleep(ShortDelay);
             }
-            // then press down
-            DebugLog.Log($"PreRaceInputRunner: down to be safe? [ON]", LogType.Menu);
-            _ds4.SetDPadDirection(DualShock4DPadDirection.South);
-            buttonString = "D";
-            _ds4.SubmitReport();
-            Thread.Sleep(50);
-
-            DebugLog.Log($"PreRaceInputRunner: down to be safe? [OFF]", LogType.Menu);
-            _ds4.SetDPadDirection(DualShock4DPadDirection.None);
-            buttonString = "";
-            _ds4.SubmitReport();
-            Thread.Sleep(ShortDelay);
+            // down press was removed, makes it work for events with faces if required
 
             // then press right to move to Start from Weather Radar
             DebugLog.Log($"PreRaceInputRunner: right to start [ON]", LogType.Menu);
@@ -689,6 +679,26 @@ namespace ClubmanSharp
             Thread.Sleep(ShortDelay);
         }
 
+        private void EventCheck()
+        {
+            if (skipEventSpecificChecks)
+                return;
+            if (currentPacket.NumCarsAtPreRace != currentTrackData.numCars)
+            {
+                DebugLog.Log($"EventCheck failed: wrong numcars ({currentPacket.NumCarsAtPreRace} != {currentTrackData.numCars})", LogType.Menu);
+                _ds4.SetButtonState(DualShock4Button.Options, true);
+                buttonString = "S";
+                _ds4.SubmitReport();
+                Thread.Sleep(ShortDelay);
+                _ds4.SetButtonState(DualShock4Button.Options, false);
+
+                DebugLog.Log($"EventCheck failed: tried to pause game, showing error", LogType.Menu);
+                connected = false;
+                error = true;
+                errorMsg = $"Incorrect number of cars in race.\nPlease verify that you have selected the correct event.";
+            }
+        }
+
         private void MenuUserLoop()
         {
             DebugLog.Log($"Starting MenuUserLoop (nofin)", LogType.Menu);
@@ -737,9 +747,12 @@ namespace ClubmanSharp
                     PostRaceInputRunner();
                     Thread.Sleep(LongDelay);
                     PreRaceInputRunner();
+                    currentMenuState = MenuState.PostRace;
                 }
                 else if (currentMenuState == MenuState.Race)
                 {
+                    EventCheck();
+
                     DebugLog.Log($"InitialMenuUser Race: pause [ON]", LogType.Menu);
                     _ds4.SetButtonState(DualShock4Button.Options, true);
                     buttonString = "S";
@@ -758,6 +771,8 @@ namespace ClubmanSharp
 
                 if (currentMenuState == MenuState.RacePaused)
                 {
+                    EventCheck();
+
                     // smash the hell out of left dpad
                     for (int i = 0; i < 5; i++)
                     {

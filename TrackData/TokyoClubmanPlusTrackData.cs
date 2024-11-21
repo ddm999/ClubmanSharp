@@ -10,6 +10,7 @@ namespace ClubmanSharp.TrackData
     public class TokyoClubmanPlusTrackData : TrackDataBase
     {
         public override TimeSpan eventTime { get; } = new TimeSpan(3, 49, 0);
+        public override short numCars { get; } = 5;
 
         public override Segment[] initialsegments { get; } =
         {
