@@ -108,6 +108,43 @@
             <TabItem Name="debugTabItem" Header="Debug">
                 <TextBlock Name="TxtDebug" Text="" TextWrapping="Wrap" Foreground="#DDD" HorizontalAlignment="Left" VerticalAlignment="Top" Height="320" Width="460" FontSize="12" Margin="10,10,0,0"/>
             </TabItem>
+            <TabItem Header="VirtualController">
+                <Grid Background="#222">
+                    <Button Name="BtnActivateController" Content="Activate" Width="200" Height="40" Margin="10" Background="#555" Foreground="#FFF" HorizontalAlignment="Center" VerticalAlignment="Top" Click="BtnActivateController_Click"/>
+                    <Grid HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Name="BtnUp" Content="Up" Width="60" Height="60" Margin="5" Background="#555" Foreground="#DDD" Click="BtnUp_Click" Grid.Row="0" Grid.Column="1"/>
+                        <Button Name="BtnLeft" Content="Left" Width="60" Height="60" Margin="5" Background="#555" Foreground="#DDD" Click="BtnLeft_Click" Grid.Row="1" Grid.Column="0"/>
+                        <Button Name="BtnRight" Content="Right" Width="60" Height="60" Margin="5" Background="#555" Foreground="#DDD" Click="BtnRight_Click" Grid.Row="1" Grid.Column="2"/>
+                        <Button Name="BtnDown" Content="Down" Width="60" Height="60" Margin="5" Background="#555" Foreground="#DDD" Click="BtnDown_Click" Grid.Row="2" Grid.Column="1"/>
+                    </Grid>
+                    <Grid HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,20,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Name="BtnOptions" Content="Options" Width="60" Height="60" Margin="5" Background="#555" Foreground="#DDD" Click="BtnOptions_Click" Grid.Row="0" Grid.Column="1"/>
+                        <Button Name="BtnPs" Content="PS" Width="60" Height="60" Margin="5" Background="#555" Foreground="#DDD" Click="BtnPs_Click" Grid.Row="1" Grid.Column="0"/>
+                        <Button Name="BtnCircle" Content="Cancle" Width="60" Height="60" Margin="5" Background="#555" Foreground="#DDD" Click="BtnCircle_Click" Grid.Row="1" Grid.Column="2"/>
+                        <Button Name="BtnCross" Content="Confirm" Width="60" Height="60" Margin="5" Background="#555" Foreground="#DDD" Click="BtnCross_Click" Grid.Row="2" Grid.Column="1"/>
+                    </Grid>
+                </Grid>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>
