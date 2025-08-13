@@ -149,7 +149,7 @@ namespace ClubmanSharp
             if (bot is null)
                 return;
 
-            if (bot.completedRaces >= 2 && (bot.stuckDetectionRuns >= (bot.completedRaces*0.05)))
+            if (bot.completedRaces >= 2 && (bot.stuckDetectionRuns >= (bot.completedRaces * 0.05)))
             {
                 string msg = "That last run had a lot of stuck detection attempts, which usually means your delays are too short.\n\n";
                 if (RadioDelayCustom.IsChecked is true)
@@ -718,7 +718,7 @@ namespace ClubmanSharp
             )
             {
                 DebugLog.Log($"Info: Patch install", LogType.Main);
-                MessageBox.Show("ClubmanSharp will now install the patch for Remote Play.\n"+
+                MessageBox.Show("ClubmanSharp will now install the patch for Remote Play.\n" +
                                 "You may need to accept a 'Windows Command Processor' UAC prompt that will appear after this box.",
                                 "ClubmanSharp Information", MessageBoxButton.OK, MessageBoxImage.Information);
 
@@ -762,21 +762,108 @@ namespace ClubmanSharp
                     DebugLog.Log($"Failed to delete download & extract files (OK!)", LogType.Main);
                 }
 
-                MessageBox.Show("This should have successfully patched Remote Play.\n"+
-                                "Launch Remote Play as normal and see if it works.\n\n"+
-                                "If it doesn't, try this process again, making sure that Remote Play is fully closed.\n"+
+                MessageBox.Show("This should have successfully patched Remote Play.\n" +
+                                "Launch Remote Play as normal and see if it works.\n\n" +
+                                "If it doesn't, try this process again, making sure that Remote Play is fully closed.\n" +
                                 "If you can't get it working, you can request help in the GitHub issues.",
                                 "ClubmanSharp Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 DebugLog.Log($"Info: Patch probably succeeded", LogType.Main);
             }
             else
             {
-                MessageBox.Show("Failed to find current Remote Play installation:\n"+
+                MessageBox.Show("Failed to find current Remote Play installation:\n" +
                                 "you can manually patch using the downloaded files left next to ClubmanSharp.",
                                 "ClubmanSharp Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 DebugLog.Log($"Info: Locating Remote Play install failed", LogType.Main);
             }
             DebugLog.Log($"Finished BtnPatchedRemotePlay_Click", LogType.Main);
+        }
+        
+        private void BtnUp_Click(object sender, RoutedEventArgs e)
+        {
+            if (virtualController.IsConnected)
+            {
+                virtualController.PressDPad(DualShock4DPadDirection.North);
+            }
+        }
+
+        private void BtnDown_Click(object sender, RoutedEventArgs e)
+        {
+            if (virtualController.IsConnected)
+            {
+                virtualController.PressDPad(DualShock4DPadDirection.South);
+            }
+        }
+
+        private void BtnLeft_Click(object sender, RoutedEventArgs e)
+        {
+            if (virtualController.IsConnected)
+            {
+                virtualController.PressDPad(DualShock4DPadDirection.West);
+            }
+        }
+
+        private void BtnRight_Click(object sender, RoutedEventArgs e)
+        {
+            if (virtualController.IsConnected)
+            {
+                virtualController.PressDPad(DualShock4DPadDirection.East);
+            }
+        }
+
+        private void BtnCross_Click(object sender, RoutedEventArgs e)
+        {
+            if (virtualController.IsConnected)
+            {
+                virtualController.PressButton(virtualController.crossButton);
+            }
+        }
+
+        private void BtnCircle_Click(object sender, RoutedEventArgs e)
+        {
+            if (virtualController.IsConnected)
+            {
+                virtualController.PressButton(virtualController.circleButton);
+            }
+        }
+
+        private void BtnOptions_Click(object sender, RoutedEventArgs e)
+        {
+            if (virtualController.IsConnected)
+            {
+                virtualController.PressButton(virtualController.optionsButton);
+            }
+        }
+
+        private void BtnPs_Click(object sender, RoutedEventArgs e)
+        {
+            if (virtualController.IsConnected)
+            {
+                virtualController.PressButton(virtualController.psButton);
+            }
+        }
+
+        private void BtnActivateController_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (!isVirtualControllerActivated)
+                {
+                    virtualController.Initialize(); 
+                    isVirtualControllerActivated = true;
+                    BtnActivateController.Content = "Deactivate";
+                }
+                else
+                {
+                    virtualController.Dispose();
+                    isVirtualControllerActivated = false;
+                    BtnActivateController.Content = "Activate";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}");
+            }
         }
     }
 }
