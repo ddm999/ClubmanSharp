@@ -31,7 +31,7 @@ namespace ClubmanSharp
         private bool autoRetry = false;
         private uint autoRetryCount = 0;
 
-        public SemanticVersion currentVersion = new(1, 3, 0);
+        public SemanticVersion currentVersion = new(1, 3, 1);
 
         public MainWindow()
         {
@@ -699,6 +699,7 @@ namespace ClubmanSharp
             DebugLog.Log($"Directory.GetCurrentDirectory {Directory.GetCurrentDirectory()}", LogType.Main);
             string dlpath = Path.Combine(Directory.GetCurrentDirectory(), "PS_Remote_Play_v550_patch.zip");
             string extractpath = Path.Combine(Directory.GetCurrentDirectory(), "PS_Remote_Play_v550_patch");
+            string backuppath = Path.Combine(Directory.GetCurrentDirectory(), "PS_Remote_Play_backup");
 
             // delete if exists, fine if this fails
             DebugLog.Log($"Deleting existing download files", LogType.Main);
@@ -708,6 +709,7 @@ namespace ClubmanSharp
             await DownloadPatchedRemotePlay(dlpath);
             DebugLog.Log($"Extracting downloaded zip", LogType.Main);
             ZipFile.ExtractToDirectory(dlpath, extractpath);
+            Directory.CreateDirectory(backuppath);
 
             if (
                 outpath != null &&
@@ -718,43 +720,43 @@ namespace ClubmanSharp
             )
             {
                 DebugLog.Log($"Info: Patch install", LogType.Main);
-                MessageBox.Show("ClubmanSharp will now install the patch for Remote Play.\n"+
-                                "You may need to accept a 'Windows Command Processor' UAC prompt that will appear after this box.",
+                MessageBox.Show("ClubmanSharp will now backup your Remote Play install, and then install the patch for Remote Play.\n"+
+                                "You may need to accept two 'Windows Command Processor' UAC prompts that will appear after this box.",
                                 "ClubmanSharp Information", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                DebugLog.Log($"Initializing RemotePlay.exe install process", LogType.Main);
+                DebugLog.Log($"Initializing RemotePlay backup process", LogType.Main);
                 Process process = new();
                 ProcessStartInfo startInfo = new()
                 {
                     WindowStyle = ProcessWindowStyle.Hidden,
                     FileName = "cmd.exe",
-                    Arguments = $"/C move \"{Path.Combine(extractpath, "RemotePlay.exe")}\" \"{outpath}\"",
+                    Arguments = $"/C copy \"{outpath}\" \"{backuppath}\"",
                     Verb = "runas",
                     UseShellExecute = true
                 };
                 process.StartInfo = startInfo;
-                DebugLog.Log($"Starting RemotePlay.exe install process", LogType.Main);
+                DebugLog.Log($"Starting RemotePlay backup process", LogType.Main);
                 process.Start();
 
-                DebugLog.Log($"Initializing RpCtrlWrapper.dll install process", LogType.Main);
+                DebugLog.Log($"Initializing RemotePlay patch install process", LogType.Main);
                 Process process2 = new();
                 ProcessStartInfo startInfo2 = new()
                 {
                     WindowStyle = ProcessWindowStyle.Hidden,
                     FileName = "cmd.exe",
-                    Arguments = $"/C move \"{Path.Combine(extractpath, "RpCtrlWrapper.dll")}\" \"{outpath}\"",
+                    Arguments = $"/C move \"{Path.Combine(extractpath, "*")}\" \"{outpath}\"",
                     Verb = "runas",
                     UseShellExecute = true
                 };
                 process2.StartInfo = startInfo2;
-                DebugLog.Log($"Starting RpCtrlWrapper.dll install process", LogType.Main);
+                DebugLog.Log($"Starting RemotePlay patch install process", LogType.Main);
                 process2.Start();
 
                 DebugLog.Log($"Deleting download & extract files", LogType.Main);
                 try
                 {
                     File.Delete(dlpath);
-                    Directory.Delete(extractpath);
+                    Directory.Delete(extractpath, true);
                 }
                 // ignore delete fails, it probably failed for a reason and might help the user if the files are left
                 catch (Exception)
