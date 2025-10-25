@@ -42,15 +42,22 @@
                     <TextBlock Name="TxtShortHelp" Text="" TextWrapping="Wrap" Foreground="#DDD" FontSize="14" Margin="10,10,0,0" HorizontalAlignment="Left" Width="440" Height="214" VerticalAlignment="Top"/>
                     <Button Name="BtnStartStop" FontFamily="Roboto" Background="#666" Foreground="#DDD" Click="StartStop_Click" FontSize="24" Content="Start" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,10,10" HorizontalAlignment="Right" Width="100" Height="40" VerticalAlignment="Bottom"/>
                     <TextBox Name="TxtIP" TextChanged="TxtIP_TextChanged" FontFamily="Roboto Mono" Background="#222" Foreground="#DDD" FontSize="24" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Right" Margin="0,0,115,10" TextWrapping="NoWrap" Text="x" Width="355" Height="40" VerticalAlignment="Bottom"/>
-                    <TextBlock Name="TxtLap" Text="Fastest Lap: x:xx.xx" HorizontalAlignment="Right" Margin="0,0,10,85" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
-                    <TextBlock Name="TxtCredits" Text="Estimated Credits: 0" HorizontalAlignment="Right" Margin="0,0,10,55" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
-                    <TextBlock Name="TxtState" Text="Current State: Unknown" HorizontalAlignment="Right" Margin="0,0,250,85" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
-                    <TextBlock Name="TxtRaces" Text="Completed Races: 0" HorizontalAlignment="Right" Margin="0,0,250,55" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
+                    <TextBlock Name="TxtLap" Text="Fastest Lap: x:xx.xx" HorizontalAlignment="Right" Margin="0,0,10,115" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
+                    <TextBlock Name="TxtLapCount" Text="Lap: -/-" HorizontalAlignment="Right" Margin="0,0,10,90" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
+                    <TextBlock Name="TxtCredits" Text="Estimated Credits: 0" HorizontalAlignment="Right" Margin="0,0,10,65" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
+                    <TextBlock Name="TxtState" Text="Current State: Unknown" HorizontalAlignment="Right" Margin="0,0,250,115" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
+                    <TextBlock Name="TxtElapsed" Text="Current Race: 00:00.000" HorizontalAlignment="Right" Margin="0,0,250,90" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
+                    <TextBlock Name="TxtRaces" Text="Completed Races: 0" HorizontalAlignment="Right" Margin="0,0,250,65" TextWrapping="Wrap" Foreground="#DDD" VerticalAlignment="Bottom" Height="25" Width="220" FontSize="16"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Settings">
                 <Grid Background="#222">
-                    <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="55*"/>
+                        <ColumnDefinition Width="19*"/>
+                        <ColumnDefinition Width="420*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.ColumnSpan="3">
                         <TextBlock Name="TxtCar" Visibility="Hidden" Text="Used Tune:" Foreground="#DDD" FontSize="16" Margin="10,10,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <!--
                         <RadioButton Name="RadioCarAuto" IsChecked="True" Content="Auto" Foreground="#DDD" FontSize="16" Margin="110,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
@@ -61,7 +68,7 @@
                         <RadioButton Name="RadioCarR34" IsChecked="False" Content="R34" Foreground="#DDD" FontSize="16" Margin="300,12,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         -->
                     </Grid>
-                    <Grid>
+                    <Grid Grid.ColumnSpan="3">
                         <TextBlock Name="TxtDelay" Text="Menu Delay Settings:" Foreground="#DDD" FontSize="16" Margin="10,40,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <RadioButton Name="RadioDelayPS4" Checked="RadioDelayPS4_Checked" IsChecked="False" Content="PS4" Foreground="#DDD" FontSize="16" Margin="180,42,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <RadioButton Name="RadioDelayPS5" Checked="RadioDelayPS5_Checked" IsChecked="False" Content="PS5" Foreground="#DDD" FontSize="16" Margin="240,42,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
@@ -72,26 +79,26 @@
                         <TextBlock Name="TxtCustomDelayLong" Text="Long:" Foreground="#DDD" FontSize="16" Margin="290,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <TextBox Name="CustomDelayLong" IsEnabled="False" TextChanged="CustomDelayLong_TextChanged" Text="3000" Width="52" Foreground="#DDD" Background="#333" FontSize="16" Margin="340,70,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                     </Grid>
-                    <Grid>
+                    <Grid Grid.ColumnSpan="3">
                         <TextBlock Name="TxtThrottle" Text="Max Throttle (Laps 3-5)" Foreground="#DDD" FontSize="16" Margin="10,100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <TextBlock Name="TxtThrottleValue" Text="255" Foreground="#DDD" FontSize="16" Margin="430,100,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <Slider Name="SliderThrottle" ValueChanged="SliderThrottle_ValueChanged"  Minimum="200" Maximum="255" Value="240" Width="240" Height="20" Margin="180,103,0,0"  HorizontalAlignment="Left" VerticalAlignment="Top" ToolTip="255/255"/>
                     </Grid>
-                    <Grid>
+                    <Grid Grid.ColumnSpan="3">
                         <TextBlock Name="TxtConfirmButton" Text="Confirm Button:" Foreground="#DDD" FontSize="16" Margin="10,130,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <RadioButton Name="RadioConfirmCross" Checked="RadioConfirmCross_Checked" IsChecked="False" Content="Cross (X)" Foreground="#DDD" FontSize="16" Margin="180,132,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <RadioButton Name="RadioConfirmCircle" Checked="RadioConfirmCircle_Checked" IsChecked="False" Content="Circle (O)" Foreground="#DDD" FontSize="16" Margin="280,132,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                     </Grid>
-                    <Grid>
+                    <Grid Grid.ColumnSpan="3">
                         <TextBlock Name="TxtAutoRetry" Text="After packet drop failure:" Foreground="#DDD" FontSize="16" Margin="10,160,0,0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
                         <RadioButton Name="RadioAutoRetryOff" Checked="RadioAutoRetryOff_Checked" IsChecked="False" Content="Error" Foreground="#DDD" FontSize="16" Margin="205,162,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                         <RadioButton Name="RadioAutoRetryOn" Checked="RadioAutoRetryOn_Checked" IsChecked="False" Content="Retry" Foreground="#DDD" FontSize="16" Margin="280,162,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" VerticalContentAlignment="Center"/>
                     </Grid>
-                    <Grid>
+                    <Grid Grid.ColumnSpan="3">
                         <TextBlock Name="TxtCheckOverride" Text="Override event-specific checks:" Foreground="#F66" FontSize="16" Margin="10,0,0,70" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
                         <CheckBox Name="CheckOverrides" Checked="CheckOverrides_Checked" Unchecked="CheckOverrides_Unchecked" IsChecked="False" Content="Active" Foreground="#DDD" FontSize="16" Margin="245,0,0,68" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
                     </Grid>
-                    <Grid>
+                    <Grid Grid.ColumnSpan="3">
                         <TextBlock Name="TxtDebugLog" Text="Debug log settings (only use when requested):" Foreground="#FA6" FontSize="16" Margin="10,0,0,40" HorizontalAlignment="Left" Height="21" VerticalAlignment="Bottom"/>
                         <CheckBox Name="CheckMain" Checked="CheckDebugMain_Checked" Unchecked="CheckDebugMain_Unchecked" Content="MainWindow / handlers" Foreground="#DDD" FontSize="16" Margin="10,0,0,10" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="190"/>
                         <CheckBox Name="CheckMenu" Checked="CheckDebugMenu_Checked" Unchecked="CheckDebugMenu_Unchecked" Content="MenuBot" Foreground="#DDD" FontSize="16" Margin="205,0,0,10" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="90"/>

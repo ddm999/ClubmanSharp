@@ -14,6 +14,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.IO.Compression;
 using System.Threading;
+using System.Windows.Threading;
 
 namespace ClubmanSharp
 {
@@ -30,6 +31,9 @@ namespace ClubmanSharp
         private string specialDebugTxt = "";
         private bool autoRetry = false;
         private uint autoRetryCount = 0;
+        private Bot.MenuState prevMenuState = Bot.MenuState.Unknown;
+        private DispatcherTimer elapsedTimer;
+        private Stopwatch raceStopwatch;
 
         public SemanticVersion currentVersion = new(1, 3, 1);
 
@@ -109,6 +113,14 @@ namespace ClubmanSharp
             CompositionTarget.Rendering += VisualLoop;
             DebugLog.Log($"Added VisualLoop", LogType.Main);
 
+            // initialize stopwatch & timer for smooth elapsed updates
+            raceStopwatch = new Stopwatch();
+            elapsedTimer = new DispatcherTimer(DispatcherPriority.Normal)
+            {
+                Interval = TimeSpan.FromMilliseconds(50)
+            };
+            elapsedTimer.Tick += ElapsedTimer_Tick;
+
             TxtDetails.Text = "WARNING: The latest version of PS Remote Play does not currently work with virtual controllers!\n" +
                               "If you do not already use a patched version of PS Remote Play, *CLOSE REMOTE PLAY* and then click the button below " +
                               "to get a version which will work with the bot.\n";
@@ -141,6 +153,16 @@ namespace ClubmanSharp
             }
 
             DebugLog.Log($"Finished MainWindow initialization", LogType.Main);
+        }
+
+        private void ElapsedTimer_Tick(object? sender, EventArgs e)
+        {
+            // Runs on UI thread — update elapsed label from the stopwatch
+            if (raceStopwatch != null && raceStopwatch.IsRunning)
+            {
+                var elapsed = raceStopwatch.Elapsed;
+                TxtElapsed.Text = $"Current Race: {elapsed.ToString(@"mm\:ss\.fff")}";
+            }
         }
 
         public void TooMuchStuckDetectionCheck()
@@ -229,6 +251,39 @@ namespace ClubmanSharp
             }
             nextUpdate = DateTime.UtcNow + new TimeSpan(1000000);
 
+            // detect menu state transitions and set race start time when state becomes Race
+            try
+            {
+                if (bot != null)
+                {
+                    var curState = bot.currentMenuState;
+                    if (curState != prevMenuState)
+                    {
+                        if (curState == Bot.MenuState.Race)
+                        {
+                            // start the stopwatch and timer for smooth updates
+                            raceStopwatch.Restart();
+                            elapsedTimer.Start();
+                        }
+                        else
+                        {
+                            // leave or enter other states -> clear race start and stop timer
+                            try
+                            {
+                                elapsedTimer.Stop();
+                                raceStopwatch.Stop();
+                            }
+                            catch { }
+                        }
+                        prevMenuState = curState;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DebugLog.Log($"Error while detecting state transition: {ex.Message}", LogType.Main);
+            }
+
             TxtState.Text = "Current State: ";
             if (bot.currentMenuState == Bot.MenuState.Unknown)
                 TxtState.Text += "Unknown";
@@ -258,6 +313,29 @@ namespace ClubmanSharp
                 TxtState.Text += "Stk Pre Race";
 
             TxtLap.Text = $"Fastest Lap: {bot.fastestLap.Minutes:d1}:{bot.fastestLap.Seconds:d2}.{bot.fastestLap.Milliseconds:d3}";
+
+            if (bot.currentPacket != null)
+            {
+                short lap = bot.currentPacket.LapCount;
+                short total = bot.currentPacket.LapsInRace;
+                if (lap >= 0 && total > 0)
+                {
+                    TxtLapCount.Text = $"Lap: {lap}/{total}";
+                }
+                else if (lap >= 0)
+                {
+                    TxtLapCount.Text = $"Lap: {lap}/-";
+                }
+                else
+                {
+                    TxtLapCount.Text = "Lap: -/-";
+                }
+            }
+            else
+            {
+                TxtLapCount.Text = "Lap: -/-";
+            }
+
             TxtRaces.Text = $"Completed Races: {bot.completedRaces}";
             TxtCredits.Text = $"Estimated Credits: {bot.completedRaces * 105000 * 0.98:n0}";
 
@@ -334,6 +412,7 @@ namespace ClubmanSharp
                 BtnStartStop.Content = "Start";
                 TxtIP.IsEnabled = true;
                 BtnStartStop.IsEnabled = true;
+                elapsedTimer.Stop();
             }
             DebugLog.Log($"Finished StartStop_Click", LogType.Main);
         }
