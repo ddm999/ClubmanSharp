@@ -32,7 +32,7 @@ namespace ClubmanSharp
         private bool autoRetry = false;
         private uint autoRetryCount = 0;
 
-        public SemanticVersion currentVersion = new(1, 3, 1);
+        public SemanticVersion currentVersion = new(1, 3, 2);
 
         public MainWindow()
         {
