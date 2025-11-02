@@ -4,16 +4,17 @@ using Nefarius.ViGEm.Client.Targets.DualShock4;
 using NuGet.Versioning;
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Net.Http;
+using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.IO.Compression;
-using System.Threading;
 
 namespace ClubmanSharp
 {
@@ -719,11 +720,35 @@ namespace ClubmanSharp
                 File.Exists(Path.Combine(outpath, "RpCtrlWrapper.dll"))
             )
             {
-                DebugLog.Log($"Info: Patch install", LogType.Main);
-                MessageBox.Show("ClubmanSharp will now backup your Remote Play install, and then install the patch for Remote Play.\n"+
-                                "You may need to accept two 'Windows Command Processor' UAC prompts that will appear after this box.",
-                                "ClubmanSharp Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                DebugLog.Log($"Patch admin check", LogType.Main);
+                using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+                {
+                    WindowsPrincipal principal = new WindowsPrincipal(identity);
+                    if(!principal.IsInRole(WindowsBuiltInRole.Administrator))
+                    {
+                        DebugLog.Log($"Patch admin check failed, trying to relaunch as admin", LogType.Main);
+                        MessageBox.Show("To patch Remote Play, ClubmanSharp must be started as an Administrator.\n" +
+                                        "ClubmanSharp will attempt to relaunch as Administrator now.\n" +
+                                        "You will likely need to accept a 'Windows Command Processor' UAC prompt for this to work.\n"+
+                                        "If you do not have admin rights on your machine, you may wish to try an alternative to Remote Play (we won't provide support for this).",
+                                        "ClubmanSharp Patch Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        Process rebootProcess = new();
+                        ProcessStartInfo rebootProcessStartInfo = new()
+                        {
+                            WindowStyle = ProcessWindowStyle.Hidden,
+                            FileName = Environment.ProcessPath,
+                            WorkingDirectory = Environment.CurrentDirectory,
+                            Verb = "runas",
+                            UseShellExecute = true
+                        };
+                        rebootProcess.StartInfo = rebootProcessStartInfo;
+                        DebugLog.Log($"Rebooting ClubmanSharp as admin", LogType.Main);
+                        rebootProcess.Start();
+                        Environment.Exit(0);
+                    }
+                }
 
+                DebugLog.Log($"Patch install", LogType.Main);
                 DebugLog.Log($"Initializing RemotePlay backup process", LogType.Main);
                 Process process = new();
                 ProcessStartInfo startInfo = new()
@@ -732,11 +757,21 @@ namespace ClubmanSharp
                     FileName = "cmd.exe",
                     Arguments = $"/C copy \"{outpath}\" \"{backuppath}\"",
                     Verb = "runas",
-                    UseShellExecute = true
+                    RedirectStandardOutput = true
                 };
                 process.StartInfo = startInfo;
                 DebugLog.Log($"Starting RemotePlay backup process", LogType.Main);
                 process.Start();
+                process.WaitForExit();
+                if (process.ExitCode > 0)
+                {
+                    DebugLog.Log($"RemotePlay backup exit code was {process.ExitCode}:\n{process.StandardOutput.ReadToEnd()}", LogType.Main);
+                    MessageBox.Show("Backing up Remote Play appears to have failed.\n"+
+                                    "To protect data, ClubmanSharp won't continue with the patch process.\n"+
+                                    "You can try to manually patch PS Remote Play yourself by moving the downloaded files next to ClubmanSharp into the PS Remote Play install folder.",
+                                    "ClubmanSharp Patch Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
                 DebugLog.Log($"Initializing RemotePlay patch install process", LogType.Main);
                 Process process2 = new();
@@ -746,11 +781,22 @@ namespace ClubmanSharp
                     FileName = "cmd.exe",
                     Arguments = $"/C move \"{Path.Combine(extractpath, "*")}\" \"{outpath}\"",
                     Verb = "runas",
-                    UseShellExecute = true
+                    RedirectStandardOutput = true
                 };
                 process2.StartInfo = startInfo2;
                 DebugLog.Log($"Starting RemotePlay patch install process", LogType.Main);
                 process2.Start();
+                process2.WaitForExit();
+                if (process2.ExitCode > 0)
+                {
+                    DebugLog.Log($"RemotePlay patch exit code was {process.ExitCode}:\n{process.StandardOutput.ReadToEnd()}", LogType.Main);
+                    MessageBox.Show("Patching Remote Play appears to have failed.\n" +
+                                    "Make sure that Remote Play is definitely fully closed before trying again.\n" +
+                                    "To protect data, ClubmanSharp won't continue with the patch process.\n" +
+                                    "You can try to manually patch PS Remote Play yourself by moving the downloaded files next to ClubmanSharp into the PS Remote Play install folder.",
+                                    "ClubmanSharp Patch Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
                 DebugLog.Log($"Deleting download & extract files", LogType.Main);
                 try
@@ -766,16 +812,15 @@ namespace ClubmanSharp
 
                 MessageBox.Show("This should have successfully patched Remote Play.\n"+
                                 "Launch Remote Play as normal and see if it works.\n\n"+
-                                "If it doesn't, try this process again, making sure that Remote Play is fully closed.\n"+
                                 "If you can't get it working, you can request help in the GitHub issues.",
-                                "ClubmanSharp Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                                "ClubmanSharp Patch Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 DebugLog.Log($"Info: Patch probably succeeded", LogType.Main);
             }
             else
             {
                 MessageBox.Show("Failed to find current Remote Play installation:\n"+
                                 "you can manually patch using the downloaded files left next to ClubmanSharp.",
-                                "ClubmanSharp Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                                "ClubmanSharp Patch Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 DebugLog.Log($"Info: Locating Remote Play install failed", LogType.Main);
             }
             DebugLog.Log($"Finished BtnPatchedRemotePlay_Click", LogType.Main);
