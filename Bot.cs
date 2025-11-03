@@ -7,6 +7,7 @@ using Nefarius.ViGEm.Client.Targets.DualShock4;
 using System.Diagnostics;
 using System.Threading;
 using ClubmanSharp.TrackData;
+using System.Windows;
 
 namespace ClubmanSharp
 {
@@ -32,6 +33,7 @@ namespace ClubmanSharp
         public DualShock4Button cancelButton = DualShock4Button.Circle;
 
         public bool skipEventSpecificChecks = false;
+        public bool verboseRecovery = false;
 
         public bool connected = false;
         public bool error = false;
@@ -455,7 +457,7 @@ namespace ClubmanSharp
             Unknown = -1,
         }
 
-        public MenuState FindBaseMenuState(bool allowReplay=false)
+        public MenuState FindBaseMenuState(bool allowReplayAndStucks=false)
         {
             if (currentPacket is null)
                 return MenuState.NoPacket;
@@ -468,8 +470,8 @@ namespace ClubmanSharp
                 return MenuState.PreRace;
             // non-event specific check: fuel stuck at maximum
             if (currentPacket.GasLevel == currentPacket.GasCapacity)
-                return MenuState.PreOrPostRace;
-            if (allowReplay && currentPacket.LapsInRace > 0)
+                return allowReplayAndStucks ? MenuState.Stuck_PreOrPostRace : MenuState.PreOrPostRace;
+            if (allowReplayAndStucks && currentPacket.LapsInRace > 0)
                 return MenuState.Replay;
             return MenuState.Unknown;
         }
@@ -511,60 +513,58 @@ namespace ClubmanSharp
                 return MenuState.Unknown;
             }
 
-            if (currentMenuState == MenuState.PreRace)
+            switch (currentMenuState)
             {
-                DebugLog.Log($"FindNewMenuState: state WAS PreRace.", LogType.Menu);
-                if (currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
-                {
-                    DebugLog.Log($"FindNewMenuState: car on track! State is Race.", LogType.Menu);
-                    EventCheck();
-                    return MenuState.Race;
-                }
-                PreRaceStuckDetection();
-            }
-            else if (currentMenuState == MenuState.Race)
-            {
-                DebugLog.Log($"FindNewMenuState: state WAS Race.", LogType.Menu);
-                if (currentPacket.Flags.HasFlag(SimulatorFlags.Paused))
-                {
-                    DebugLog.Log($"FindNewMenuState: paused! State is RacePaused.", LogType.Menu);
-                    return MenuState.RacePaused;
-                }
-                if (currentPacket.LapCount > 5)
-                {
-                    DebugLog.Log($"FindNewMenuState: lap > 5! State is RaceResult.", LogType.Menu);
-                    return MenuState.RaceResult;
-                }
-            }
-            else if (currentMenuState == MenuState.RacePaused)
-            {
-                DebugLog.Log($"FindNewMenuState: state WAS RacePaused.", LogType.Menu);
-                // have to just assume Exit is never clicked
-                //  because it can bring up a mini-rewards screen with no way to tell
-                if (!currentPacket.Flags.HasFlag(SimulatorFlags.Paused))
-                {
-                    DebugLog.Log($"FindNewMenuState: not paused! State is Race.", LogType.Menu);
-                    return MenuState.Race;
-                }
-            }
-            else if (currentMenuState == MenuState.RaceResult)
-            {
-                DebugLog.Log($"FindNewMenuState: state WAS RaceResult.", LogType.Menu);
-                if (!currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
-                {
-                    DebugLog.Log($"FindNewMenuState: car on track! State is Replay.", LogType.Menu);
-                    return MenuState.Replay;
-                }
-                RaceResultStuckDetection();
-            }
-            else if (currentMenuState == MenuState.Replay)
-            {
-                DebugLog.Log($"FindNewMenuState: state WAS Replay.", LogType.Menu);
-                if (currentPacket.NumCarsAtPreRace < 0) //note: packet data changed, is now numcars during race, -1 otherwise
-                {
-                    DebugLog.Log($"FindNewMenuState: numcars no longer set! State is PostRace.", LogType.Menu);
-                    return MenuState.PostRace;
-                }
+                case MenuState.PreRace:
+                    DebugLog.Log($"FindNewMenuState: state WAS PreRace.", LogType.Menu);
+                    if (currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
+                    {
+                        DebugLog.Log($"FindNewMenuState: car on track! State is Race.", LogType.Menu);
+                        EventCheck();
+                        return MenuState.Race;
+                    }
+                    PreRaceStuckDetection();
+                    break;
+                case MenuState.Race:
+                    DebugLog.Log($"FindNewMenuState: state WAS Race.", LogType.Menu);
+                    if (currentPacket.Flags.HasFlag(SimulatorFlags.Paused))
+                    {
+                        DebugLog.Log($"FindNewMenuState: paused! State is RacePaused.", LogType.Menu);
+                        return MenuState.RacePaused;
+                    }
+                    if (currentPacket.LapCount > 5)
+                    {
+                        DebugLog.Log($"FindNewMenuState: lap > 5! State is RaceResult.", LogType.Menu);
+                        return MenuState.RaceResult;
+                    }
+                    break;
+                case MenuState.RacePaused:
+                    DebugLog.Log($"FindNewMenuState: state WAS RacePaused.", LogType.Menu);
+                    // have to just assume Exit is never clicked
+                    //  because it can bring up a mini-rewards screen with no way to tell
+                    if (!currentPacket.Flags.HasFlag(SimulatorFlags.Paused))
+                    {
+                        DebugLog.Log($"FindNewMenuState: not paused! State is Race.", LogType.Menu);
+                        return MenuState.Race;
+                    }
+                    break;
+                case MenuState.RaceResult:
+                    DebugLog.Log($"FindNewMenuState: state WAS RaceResult.", LogType.Menu);
+                    if (!currentPacket.Flags.HasFlag(SimulatorFlags.CarOnTrack))
+                    {
+                        DebugLog.Log($"FindNewMenuState: car on track! State is Replay.", LogType.Menu);
+                        return MenuState.Replay;
+                    }
+                    RaceResultStuckDetection();
+                    break;
+                case MenuState.Replay:
+                    DebugLog.Log($"FindNewMenuState: state WAS Replay.", LogType.Menu);
+                    if (currentPacket.NumCarsAtPreRace < 0) //note: packet data changed, is now numcars during race, -1 otherwise
+                    {
+                        DebugLog.Log($"FindNewMenuState: numcars no longer set! State is PostRace.", LogType.Menu);
+                        return MenuState.PostRace;
+                    }
+                    break;
             }
             return currentMenuState;
         }
@@ -574,7 +574,7 @@ namespace ClubmanSharp
             // ensure we're hovered over start race
 
             // first, smash the hell out of the circle button
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 6; i++)
             {
                 DebugLog.Log($"PreRaceInputRunner: cancel to exit [ON]", LogType.Menu);
                 _ds4.SetButtonState(cancelButton, true);
@@ -589,7 +589,7 @@ namespace ClubmanSharp
                 Thread.Sleep(ShortDelay);
             }
             // then smash the hell out of left dpad
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 8; i++)
             {
                 DebugLog.Log($"PreRaceInputRunner: left to weather [ON]", LogType.Menu);
                 _ds4.SetDPadDirection(DualShock4DPadDirection.West);
@@ -716,20 +716,13 @@ namespace ClubmanSharp
             currentMenuState = FindBaseMenuState();
             DebugLog.Log($"MenuUserLoop: base menu state is {currentMenuState}", LogType.Menu);
 
-            if (currentMenuState == MenuState.Unknown)
-            {
-                DebugLog.Log($"BotError: can't start if menu state is Unknown", LogType.Menu);
-                connected = false;
-                error = true;
-                errorMsg = "Couldn't determine game state. Open the pre-race menu before starting.";
-                return;
-            }
-            else if (currentMenuState == MenuState.NoPacket)
+            if (currentMenuState == MenuState.NoPacket)
             {
                 DebugLog.Log($"BotError: can't start if menu state is NoPacket", LogType.Menu);
                 connected = false;
                 error = true;
-                errorMsg = "No packet received.\nCheck your connection, allow ClubmanSharp access through any firewalls, verify the entered IP address for your console.\n\n" +
+                errorMsg = "No packet received.\n"+
+                           "Check your connection, allow ClubmanSharp access through any firewalls, verify the entered IP address for your console.\n\n" +
                            "A restricted network such as a university campus may block the connection:\n" +
                            "you can try using a mobile hotspot (be aware of your data usage) or internet connection sharing through your PC.";
                 return;
@@ -737,19 +730,7 @@ namespace ClubmanSharp
 
             try
             {
-                if (currentMenuState == MenuState.PreRace)
-                {
-                    //NOTE: packet format changed, cannot test pre-race values
-                    PreRaceInputRunner();
-                }
-                else if (currentMenuState == MenuState.PreOrPostRace)
-                {
-                    PostRaceInputRunner();
-                    Thread.Sleep(LongDelay);
-                    PreRaceInputRunner();
-                    currentMenuState = MenuState.PostRace;
-                }
-                else if (currentMenuState == MenuState.Race)
+                if (currentMenuState == MenuState.Race)
                 {
                     EventCheck();
 
@@ -847,269 +828,272 @@ namespace ClubmanSharp
                     return;
                 }
 
-                if (currentMenuState == MenuState.Unknown)
-                {
-                    DebugLog.Log($"MenuUser: unknown state", LogType.Menu);
-                    Thread.Sleep(1000);
-                    currentMenuState = FindBaseMenuState();
-                    continue;
-                }
-
                 currentMenuState = FindNewMenuState();
 
                 try
                 {
-                    if (currentMenuState == MenuState.Unknown)
+                    switch (currentMenuState)
                     {
-                        DebugLog.Log($"BotError: MenuUser: changed to unknown state", LogType.Menu);
-                        DisconnectController();
-                        connected = false;
-                        error = true;
-                        errorMsg = "Unexpected menu state change. Unable to determine game state.";
-                        return;
-                    }
-                    else if (currentMenuState == MenuState.RaceResult)
-                    {
-                        Thread.Sleep(ShortDelay);
+                        case MenuState.Unknown:
+                            DebugLog.Log($"BotError: MenuUser: changed to unknown state", LogType.Menu);
+                            DisconnectController();
+                            connected = false;
+                            error = true;
+                            errorMsg = "Unexpected menu state change. Unable to determine game state.";
+                            return;
+                        case MenuState.RaceResult:
+                            Thread.Sleep(ShortDelay);
 
-                        if (!registeredResult)
-                        {
-                            DebugLog.Log($"MenuUser RaceResult: registering new result", LogType.Menu);
-                            completedRaces += 1;
+                            if (!registeredResult)
+                            {
+                                DebugLog.Log($"MenuUser RaceResult: registering new result", LogType.Menu);
+                                completedRaces += 1;
 
-                            _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 128);
-                            _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
-                            _ds4.SetButtonState(DualShock4Button.TriggerLeft, false);
-                            _ds4.SetButtonState(DualShock4Button.TriggerRight, false);
-                            _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 0);
-                            _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
-                            DebugLog.Log($"MenuUser RaceResult: reset all inputs", LogType.Menu);
+                                _ds4.SetAxisValue(DualShock4Axis.LeftThumbX, 128);
+                                _ds4.SetButtonState(DualShock4Button.ThumbRight, false);
+                                _ds4.SetButtonState(DualShock4Button.TriggerLeft, false);
+                                _ds4.SetButtonState(DualShock4Button.TriggerRight, false);
+                                _ds4.SetSliderValue(DualShock4Slider.LeftTrigger, 0);
+                                _ds4.SetSliderValue(DualShock4Slider.RightTrigger, 0);
+                                DebugLog.Log($"MenuUser RaceResult: reset all inputs", LogType.Menu);
 
-                            registeredResult = true;
+                                registeredResult = true;
 
-                            currentTrackData.NewRace();
-                        }
+                                currentTrackData.NewRace();
+                            }
 
-                        DebugLog.Log($"MenuUser RaceResult: click continue [ON]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, true);
-                        buttonString = "X";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(50);
-
-                        DebugLog.Log($"MenuUser RaceResult: click continue [OFF]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, false);
-                        buttonString = "";
-                        _ds4.SubmitReport();
-                    }
-                    else if (currentMenuState == MenuState.Replay)
-                    {
-                        registeredResult = false;
-                        _raceResultStuckCount = 0;
-
-                        Thread.Sleep(LongDelay);
-
-                        for (int i = 0; i < 2; i++)
-                        {
-                            DebugLog.Log($"MenuUser Replay: click show hud / exit [ON]", LogType.Menu);
+                            DebugLog.Log($"MenuUser RaceResult: click continue [ON]", LogType.Menu);
                             _ds4.SetButtonState(confirmButton, true);
                             buttonString = "X";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
 
-                            DebugLog.Log($"MenuUser Replay: click show hud / exit [OFF]", LogType.Menu);
+                            DebugLog.Log($"MenuUser RaceResult: click continue [OFF]", LogType.Menu);
                             _ds4.SetButtonState(confirmButton, false);
                             buttonString = "";
                             _ds4.SubmitReport();
-                            Thread.Sleep(ShortDelay);
-                        }
+                            break;
+                        case MenuState.Replay:
+                            registeredResult = false;
+                            _raceResultStuckCount = 0;
 
-                        Thread.Sleep(LongDelay);
-                    }
-                    else if (currentMenuState == MenuState.PostRace)
-                    {
-                        Thread.Sleep(LongDelay);
+                            Thread.Sleep(LongDelay);
 
-                        DebugLog.Log($"MenuUser PostRace: right to retry [ON]", LogType.Menu);
-                        _ds4.SetDPadDirection(DualShock4DPadDirection.East);
-                        buttonString = "R";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(50);
+                            for (int i = 0; i < 2; i++)
+                            {
+                                DebugLog.Log($"MenuUser Replay: click show hud / exit [ON]", LogType.Menu);
+                                _ds4.SetButtonState(confirmButton, true);
+                                buttonString = "X";
+                                _ds4.SubmitReport();
+                                Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser PostRace: right to retry [OFF]", LogType.Menu);
-                        _ds4.SetDPadDirection(DualShock4DPadDirection.None);
-                        buttonString = "";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(ShortDelay);
+                                DebugLog.Log($"MenuUser Replay: click show hud / exit [OFF]", LogType.Menu);
+                                _ds4.SetButtonState(confirmButton, false);
+                                buttonString = "";
+                                _ds4.SubmitReport();
+                                Thread.Sleep(ShortDelay);
+                            }
 
-                        DebugLog.Log($"MenuUser PostRace: click retry [ON]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, true);
-                        buttonString = "X";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(50);
+                            Thread.Sleep(LongDelay);
+                            break;
+                        case MenuState.PostRace:
+                            Thread.Sleep(LongDelay);
+                            PostRaceInputRunner();
+                            _preRaceStuckCount = 0;
+                            DebugLog.Log($"MenuUser PostRace: set state to PreRace", LogType.Menu);
+                            currentMenuState = MenuState.PreRace;
+                            break;
+                        case MenuState.PreRace:
+                            Thread.Sleep(LongDelay);
+                            PreRaceInputRunner();
+                            Thread.Sleep(LongDelay);
+                            break;
+                        case MenuState.PreOrPostRace:
+                            PreRaceInputRunner();
+                            Thread.Sleep(5000);
+                            currentMenuState = FindBaseMenuState(true);
+                            break;
+                        case MenuState.Stuck_PreOrPostRace:
+                            DebugLog.Log($"MenuUser Stuck_PreOrPostRace: attempting recovery", LogType.Menu);
+                            Thread.Sleep(3000);
 
-                        DebugLog.Log($"MenuUser PostRace: click retry [OFF]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, false);
-                        buttonString = "";
-                        _ds4.SubmitReport();
+                            PreRaceInputRunner();
 
-                        _preRaceStuckCount = 0;
-                        DebugLog.Log($"MenuUser PostRace: set state to PreRace", LogType.Menu);
-                        currentMenuState = MenuState.PreRace;
-                    }
-                    else if (currentMenuState == MenuState.PreRace)
-                    {
-                        Thread.Sleep(LongDelay);
+                            Thread.Sleep(5000);
 
-                        DebugLog.Log($"MenuUser PreRace: click start [ON]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, true);
-                        buttonString = "X";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(50);
+                            currentMenuState = FindBaseMenuState(true);
+                            // if we're still in pre-race, assume it's actually post-race
+                            if (currentMenuState == MenuState.Stuck_PreOrPostRace)
+                            {
+                                DebugLog.Log($"MenuUser Stuck_PreOrPostRace: set state to Stuck_PostRace", LogType.Menu);
+                                currentMenuState = MenuState.Stuck_PostRace;
+                                if (verboseRecovery)
+                                {
+                                    MessageBox.Show("Ran PRE-RACE inputs due to being stuck.\n" +
+                                                    "Please screenshot both the state of the game and this message with the Print Screen key.\n" +
+                                                    "Now switching to POST-RACE recovery.",
+                                                    "ClubmanSharp Verbose Recovery Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                                }
+                            }
+                            else if (currentMenuState == MenuState.Replay)
+                            {
+                                DebugLog.Log($"MenuUser Stuck_PreOrPostRace: set state to Stuck_Replay", LogType.Menu);
+                                currentMenuState = MenuState.Stuck_Replay;
+                                if (verboseRecovery)
+                                {
+                                    MessageBox.Show("Ran PRE-RACE inputs due to being stuck.\n" +
+                                                    "Please screenshot both the state of the game and this message with the Print Screen key.\n" +
+                                                    "Now switching to REPLAY recovery.",
+                                                    "ClubmanSharp Verbose Recovery Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                                }
+                            }
+                            else
+                            {
+                                DebugLog.Log($"MenuUser Stuck_PreOrPostRace: unknown result", LogType.Menu);
+                                DebugLog.Log($"BotError: MenuUser gave up, Stuck_PreOrPost. don't wanna do harm when totally lost", LogType.Menu);
+                                DisconnectController();
+                                connected = false;
+                                error = true;
+                                errorMsg = "Got stuck attempting to correct a post-race menu failure. Unable to determine game state.";
+                                return;
+                            }
+                            break;
+                        case MenuState.Stuck_Replay:
+                            DebugLog.Log($"MenuUser Stuck_Replay: attempting recovery", LogType.Menu);
+                            // get to the exit button
+                            for (int i = 0; i < 10; i++)
+                            {
+                                DebugLog.Log($"MenuUser Stuck_Replay: right to exit [ON]", LogType.Menu);
+                                _ds4.SetDPadDirection(DualShock4DPadDirection.East);
+                                buttonString = "R";
+                                _ds4.SubmitReport();
+                                Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser PreRace: click start [OFF]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, false);
-                        buttonString = "";
-                        _ds4.SubmitReport();
-
-                        Thread.Sleep(LongDelay);
-                    }
-                    else if (currentMenuState == MenuState.Stuck_PreOrPostRace)
-                    {
-                        DebugLog.Log($"MenuUser Stuck_PreOrPostRace: attempting recovery", LogType.Menu);
-                        Thread.Sleep(3000);
-
-                        PreRaceInputRunner();
-
-                        Thread.Sleep(5000);
-
-                        // if we're still in pre-race, it's actually post-race
-                        currentMenuState = FindBaseMenuState(true);
-                        if (currentMenuState == MenuState.PreRace)
-                        {
-                            DebugLog.Log($"MenuUser Stuck_PreOrPostRace: set state to Stuck_PostRace", LogType.Menu);
-                            currentMenuState = MenuState.Stuck_PostRace;
-                        }
-                        if (currentMenuState == MenuState.Replay)
-                        {
-                            DebugLog.Log($"MenuUser Stuck_PreOrPostRace: set state to Stuck_Replay", LogType.Menu);
-                            currentMenuState = MenuState.Stuck_Replay;
-                        }
-                    }
-                    else if (currentMenuState == MenuState.Stuck_Replay)
-                    {
-                        DebugLog.Log($"MenuUser Stuck_Replay: attempting recovery", LogType.Menu);
-                        // get to the exit button
-                        for (int i = 0; i < 10; i++)
-                        {
-                            DebugLog.Log($"MenuUser Stuck_Replay: right to exit [ON]", LogType.Menu);
-                            _ds4.SetDPadDirection(DualShock4DPadDirection.East);
-                            buttonString = "R";
+                                DebugLog.Log($"MenuUser Stuck_Replay: right to exit [OFF]", LogType.Menu);
+                                _ds4.SetDPadDirection(DualShock4DPadDirection.None);
+                                buttonString = "";
+                                _ds4.SubmitReport();
+                                Thread.Sleep(250);
+                            }
+                            // click exit
+                            DebugLog.Log($"MenuUser Stuck_Replay: click exit [ON]", LogType.Menu);
+                            _ds4.SetButtonState(confirmButton, true);
+                            buttonString = "X";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
 
-                            DebugLog.Log($"MenuUser Stuck_Replay: right to exit [OFF]", LogType.Menu);
+                            DebugLog.Log($"MenuUser Stuck_Replay: click exit [OFF]", LogType.Menu);
+                            _ds4.SetButtonState(confirmButton, false);
+                            buttonString = "";
+                            _ds4.SubmitReport();
+                            Thread.Sleep(250);
+
+                            Thread.Sleep(3000);
+                            DebugLog.Log($"MenuUser Stuck_Replay: set state to PostRace", LogType.Menu);
+                            currentMenuState = MenuState.PostRace;
+                            if (verboseRecovery)
+                            {
+                                MessageBox.Show("Ran REPLAY inputs due to being stuck.\n" +
+                                                "Please screenshot both the state of the game and this message with the Print Screen key.\n" +
+                                                "Now switching to POST-RACE recovery.",
+                                                "ClubmanSharp Verbose Recovery Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            break;
+                        case MenuState.Stuck_PostRace:
+                            DebugLog.Log($"MenuUser Stuck_PostRace: attempting recovery", LogType.Menu);
+                            // first, smash the hell out of the circle button
+                            for (int i = 0; i < 5; i++)
+                            {
+                                DebugLog.Log($"MenuUser Stuck_PostRace: cancel to exit [ON]", LogType.Menu);
+                                _ds4.SetButtonState(cancelButton, true);
+                                buttonString = "O";
+                                _ds4.SubmitReport();
+                                Thread.Sleep(50);
+
+                                DebugLog.Log($"MenuUser Stuck_PostRace: cancel to exit [OFF]", LogType.Menu);
+                                _ds4.SetButtonState(cancelButton, false);
+                                buttonString = "";
+                                _ds4.SubmitReport();
+                                Thread.Sleep(250);
+                            }
+                            // then press left
+                            DebugLog.Log($"MenuUser Stuck_PostRace: left to retry [ON]", LogType.Menu);
+                            _ds4.SetDPadDirection(DualShock4DPadDirection.West);
+                            buttonString = "L";
+                            _ds4.SubmitReport();
+                            Thread.Sleep(50);
+
+                            DebugLog.Log($"MenuUser Stuck_PostRace: left to retry [OFF]", LogType.Menu);
                             _ds4.SetDPadDirection(DualShock4DPadDirection.None);
                             buttonString = "";
                             _ds4.SubmitReport();
                             Thread.Sleep(250);
-                        }
-                        // click exit
-                        DebugLog.Log($"MenuUser Stuck_Replay: click exit [ON]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, true);
-                        buttonString = "X";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser Stuck_Replay: click exit [OFF]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, false);
-                        buttonString = "";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(250);
-
-                        Thread.Sleep(3000);
-                        DebugLog.Log($"MenuUser Stuck_Replay: set state to PostRace", LogType.Menu);
-                        currentMenuState = MenuState.PostRace;
-                    }
-                    else if (currentMenuState == MenuState.Stuck_PostRace)
-                    {
-                        DebugLog.Log($"MenuUser Stuck_PostRace: attempting recovery", LogType.Menu);
-                        // first, smash the hell out of the circle button
-                        for (int i = 0; i < 5; i++)
-                        {
-                            DebugLog.Log($"MenuUser Stuck_PostRace: cancel to exit [ON]", LogType.Menu);
-                            _ds4.SetButtonState(cancelButton, true);
-                            buttonString = "O";
+                            // and finally, click retry
+                            DebugLog.Log($"MenuUser Stuck_PostRace: click retry [ON]", LogType.Menu);
+                            _ds4.SetButtonState(confirmButton, true);
+                            buttonString = "X";
                             _ds4.SubmitReport();
                             Thread.Sleep(50);
 
-                            DebugLog.Log($"MenuUser Stuck_PostRace: cancel to exit [OFF]", LogType.Menu);
-                            _ds4.SetButtonState(cancelButton, false);
+                            DebugLog.Log($"MenuUser Stuck_PostRace: click retry [OFF]", LogType.Menu);
+                            _ds4.SetButtonState(confirmButton, false);
                             buttonString = "";
                             _ds4.SubmitReport();
-                            Thread.Sleep(250);
-                        }
-                        // then press left
-                        DebugLog.Log($"MenuUser Stuck_PostRace: left to retry [ON]", LogType.Menu);
-                        _ds4.SetDPadDirection(DualShock4DPadDirection.West);
-                        buttonString = "L";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser Stuck_PostRace: left to retry [OFF]", LogType.Menu);
-                        _ds4.SetDPadDirection(DualShock4DPadDirection.None);
-                        buttonString = "";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(250);
+                            DebugLog.Log($"MenuUser Stuck_PostRace: set state to Stuck_PreRace", LogType.Menu);
+                            currentMenuState = MenuState.Stuck_PreRace;
+                            if (verboseRecovery)
+                            {
+                                MessageBox.Show("Ran POST-RACE inputs due to being stuck.\n" +
+                                                "Please screenshot both the state of the game and this message with the Print Screen key.\n" +
+                                                "Now switching to PRE-RACE recovery.",
+                                                "ClubmanSharp Verbose Recovery Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                            }
+                            break;
+                        case MenuState.Stuck_PreRace:
+                            DebugLog.Log($"MenuUser Stuck_PreRace: continuing recovery", LogType.Menu);
+                            Thread.Sleep(8000);
 
-                        // and finally, click retry
-                        DebugLog.Log($"MenuUser Stuck_PostRace: click retry [ON]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, true);
-                        buttonString = "X";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(50);
+                            DebugLog.Log($"MenuUser Stuck_PreRace: click start [ON]", LogType.Menu);
+                            _ds4.SetButtonState(confirmButton, true);
+                            buttonString = "X";
+                            _ds4.SubmitReport();
+                            Thread.Sleep(50);
 
-                        DebugLog.Log($"MenuUser Stuck_PostRace: click retry [OFF]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, false);
-                        buttonString = "";
-                        _ds4.SubmitReport();
+                            DebugLog.Log($"MenuUser Stuck_PreRace: click start [OFF]", LogType.Menu);
+                            _ds4.SetButtonState(confirmButton, false);
+                            buttonString = "";
+                            _ds4.SubmitReport();
 
-                        DebugLog.Log($"MenuUser Stuck_PostRace: set state to Stuck_PreRace", LogType.Menu);
-                        currentMenuState = MenuState.Stuck_PreRace;
-                    }
-                    else if (currentMenuState == MenuState.Stuck_PreRace)
-                    {
-                        DebugLog.Log($"MenuUser Stuck_PreRace: continuing recovery", LogType.Menu);
-                        Thread.Sleep(8000);
+                            Thread.Sleep(5000);
 
-                        DebugLog.Log($"MenuUser Stuck_PreRace: click start [ON]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, true);
-                        buttonString = "X";
-                        _ds4.SubmitReport();
-                        Thread.Sleep(50);
-
-                        DebugLog.Log($"MenuUser Stuck_PreRace: click start [OFF]", LogType.Menu);
-                        _ds4.SetButtonState(confirmButton, false);
-                        buttonString = "";
-                        _ds4.SubmitReport();
-
-                        Thread.Sleep(5000);
-
-                        currentMenuState = MenuState.PreRace;
-                        currentMenuState = FindNewMenuState();
-                        if (currentMenuState != MenuState.Race)
-                        {
-                            DebugLog.Log($"BotError: MenuUser gave up. don't wanna do harm when totally lost", LogType.Menu);
+                            currentMenuState = MenuState.PreRace;
+                            currentMenuState = FindNewMenuState();
+                            if (currentMenuState != MenuState.Race)
+                            {
+                                DebugLog.Log($"BotError: MenuUser gave up, Stuck_PreRace. don't wanna do harm when totally lost", LogType.Menu);
+                                DisconnectController();
+                                connected = false;
+                                error = true;
+                                errorMsg = "Got stuck attempting to correct a post-race menu failure. Unable to determine game state.";
+                                return;
+                            }
+                            break;
+                        case MenuState.Race:
+                        case MenuState.RaceStart:
+                        case MenuState.RacePaused:
+                            DebugLog.Log($"MenuLoop: in race... zzz", LogType.Menu);
+                            Thread.Sleep(1000);
+                            break;
+                        case MenuState.TokyoEvents:
+                        case MenuState.NoPacket:
+                            DebugLog.Log($"BotError: Impossible to reach MenuState!!!", LogType.Menu);
                             DisconnectController();
                             connected = false;
                             error = true;
-                            errorMsg = "Got stuck attempting to correct a post-race menu failure. Unable to determine game state.";
+                            errorMsg = "Internal error: entered an impossible MenuState.";
                             return;
-                        }
-                    }
-                    else
-                    {
-                        DebugLog.Log($"MenuLoop: in race... zzz", LogType.Menu);
-                        Thread.Sleep(1000);
                     }
                 }
                 catch (Exception ex)

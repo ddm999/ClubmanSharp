@@ -55,6 +55,7 @@ namespace ClubmanSharp
             CheckDriv.IsChecked = settings.debugDriv > 0;
             CheckTrck.IsChecked = settings.debugTrck > 0;
             CheckOverrides.IsChecked = settings.trackOverrides > 0;
+            CheckVerboseRecovery.IsChecked = settings.verboseRecovery > 0;
             DebugLog.Log("Loaded checkbox settings", LogType.Main);
 
             CustomDelayShort.Text = $"{settings.customShortDelay}";
@@ -150,7 +151,7 @@ namespace ClubmanSharp
             if (bot is null)
                 return;
 
-            if (bot.completedRaces >= 2 && (bot.stuckDetectionRuns >= (bot.completedRaces*0.05)))
+            if (!bot.error && bot.completedRaces >= 2 && (bot.stuckDetectionRuns >= (bot.completedRaces*0.05)))
             {
                 string msg = "That last run had a lot of stuck detection attempts, which usually means your delays are too short.\n\n";
                 if (RadioDelayCustom.IsChecked is true)
@@ -260,7 +261,7 @@ namespace ClubmanSharp
 
             TxtLap.Text = $"Fastest Lap: {bot.fastestLap.Minutes:d1}:{bot.fastestLap.Seconds:d2}.{bot.fastestLap.Milliseconds:d3}";
             TxtRaces.Text = $"Completed Races: {bot.completedRaces}";
-            TxtCredits.Text = $"Estimated Credits: {bot.completedRaces * 105000 * 0.98:n0}";
+            TxtCredits.Text = $"Estimated Credits: {bot.completedRaces * 105000:n0}";
 
             if (tabControl.SelectedItem == debugTabItem)
             {
@@ -635,6 +636,36 @@ namespace ClubmanSharp
             settings.debugLog = 0;
             settings.Save();
             DebugLog.Log($"Finished CheckDebugTrck_Unchecked", LogType.Main);
+        }
+
+        private void CheckVerboseRecovery_Checked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckVerboseRecovery_Checked", LogType.Main);
+            var result = MessageBox.Show("This setting is only intended to be used by those asked to use it.\n"+
+                                         "It will pause ClubmanSharp repeatedly during any recovery attempt and prompt you to screenshot both the game & message box.\n"+
+                                         "If you have not been asked to use it, click Cancel to this message.", "ClubmanSharp Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
+            if (result == MessageBoxResult.Cancel)
+            {
+                CheckVerboseRecovery.IsChecked = false;
+                return;
+            }
+            if (bot is null)
+                return;
+            bot.verboseRecovery = true;
+            settings.verboseRecovery = 1;
+            settings.Save();
+            DebugLog.Log($"Finished CheckVerboseRecovery_Checked", LogType.Main);
+        }
+
+        private void CheckVerboseRecovery_Unchecked(object sender, RoutedEventArgs e)
+        {
+            DebugLog.Log($"Started CheckVerboseRecovery_Unchecked", LogType.Main);
+            if (bot is null)
+                return;
+            bot.verboseRecovery = false;
+            settings.verboseRecovery = 0;
+            settings.Save();
+            DebugLog.Log($"Finished CheckVerboseRecovery_Unchecked", LogType.Main);
         }
 
         /*
